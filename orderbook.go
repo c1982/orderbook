@@ -1,67 +1,70 @@
 package matching
 
 import (
-	"fmt"
+	"sort"
+	"time"
 )
 
 const (
-	BID = 1
-	ASK = 2
+	COMPLETE = iota
+	FILLED
 )
 
-type BidAsk struct {
-	Entry struct {
-		Bid int
-		Ask int
-	}
+type Order struct {
+	ID     int
+	UserID int
+	Base   string
+	Second string
+	Time   time.Time
+	Status int
+	Type   string //market, limit, stop, stop limit
+	Side   string
+	Price  float64
+	Amount float64
 }
 
-func (BidAsk) spread() int {
-	return 0
-}
+//BidList Bid price yüksekten düşüğe doğru sıralanacak.
+type BidList []Order
+
+func (b BidList) Len() int           { return len(b) }
+func (b BidList) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
+func (b BidList) Less(i, j int) bool { return b[i].Price < b[j].Price }
+
+//AskList Ask price düşükten yükseğe doğru sıralanacak.
+type AskList []Order
+
+func (a AskList) Len() int           { return len(a) }
+func (a AskList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a AskList) Less(i, j int) bool { return a[i].Price > a[j].Price }
 
 type OrderBook struct {
-	Bids map[int]int
-	Asks map[int]int
+	bids BidList
+	asks AskList
+}
+
+func (ob *OrderBook) AskAdd(order Order) {
+
+	ob.asks = append(ob.asks, order)
+	sort.Sort(ob.asks)
+}
+
+func (ob *OrderBook) BidAdd(order Order) {
+
+	ob.bids = append(ob.bids, order)
+	sort.Sort(ob.bids)
+}
+
+func NewOrderBook() *OrderBook {
+
+	return &OrderBook{
+		bids: []Order{},
+		asks: []Order{},
+	}
 }
 
 func (ob *OrderBook) Run() {
 
-	for i, v := range ob.Asks {
-		fmt.Printf("%d\t%d\r", i, v)
+	for {
+
 	}
-
-	for i, v := range ob.Bids {
-		fmt.Printf("%d\t%d\r", i, v)
-	}
-}
-
-func (ob *OrderBook) isEmpty() bool {
-	return (len(ob.Bids) == 0) && (len(ob.Asks) == 0)
-}
-
-func (ob *OrderBook) add(price, amount int, bid bool) {
-
-	if bid {
-		ob.Bids[price] += amount
-	} else {
-		ob.Asks[price] += amount
-	}
-}
-
-func (ob *OrderBook) AddBid(price, amount int) {
-	ob.add(price, amount, true)
-}
-
-func (ob *OrderBook) AddAsk(price, amount int) {
-	ob.add(price, amount, false)
-}
-
-func (ob *OrderBook) GetBidAsk() (ba BidAsk) {
-	return
-}
-
-func (ob *OrderBook) rbegin() {
-
-	best_bid := ob.Bids[len(ob.Bids)-1]
 }
