@@ -1,6 +1,7 @@
 package matching
 
 import (
+	"log"
 	"sort"
 	"time"
 )
@@ -8,6 +9,8 @@ import (
 const (
 	COMPLETE = iota
 	FILLED
+
+	MARKET = "market"
 )
 
 type Order struct {
@@ -46,12 +49,61 @@ func (ob *OrderBook) AskAdd(order Order) {
 
 	ob.asks = append(ob.asks, order)
 	sort.Sort(ob.asks)
+
+	ob.execute(order)
 }
 
 func (ob *OrderBook) BidAdd(order Order) {
 
 	ob.bids = append(ob.bids, order)
 	sort.Sort(ob.bids)
+}
+
+func (ob *OrderBook) execute(order Order) {
+
+	if order.Type == MARKET {
+		if order.Side == "ask" {
+
+			log.Printf("Amount: %f", order.Amount)
+			var amnt float64
+			for i, iter := range ob.bids {
+
+				if order.Amount == iter.Amount {
+					//Full
+				} else if order.Amount > iter.Amount {
+					//Filled
+					amnt = iter.Amount
+					order.Amount -= iter.Amount
+					ob.bids[i].Amount = 0
+				} else if order.Amount < iter.Amount {
+					//Filled
+					amnt = order.Amount
+					ob.bids[i].Amount -= order.Amount
+					order.Amount = 0
+				}
+
+				log.Printf("Amount: %f Bid: %f", order.Amount, amnt)
+
+				if order.Amount == 0 {
+					break
+				}
+			}
+		}
+	}
+
+	ob.cleanComplete()
+}
+
+func (ob *OrderBook) cleanComplete() {
+
+	for _, v := range ob.bids {
+		if v.Status != 1 {
+			continue
+		}
+
+		//bids'den  bu order'ı sil.
+
+	}
 }
 
 func NewOrderBook() *OrderBook {
