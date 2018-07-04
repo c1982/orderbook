@@ -9,9 +9,12 @@ import (
 const (
 	COMPLETE = iota + 1
 	FILLED
+	TRIGGIRED
 
-	MARKET = "market"
-	LIMIT  = "limit"
+	MARKET     = "market"
+	LIMIT      = "limit"
+	STOPMARKET = "stop_market"
+	STOPLIMIT  = "stop_limit"
 )
 
 type Order struct {
@@ -52,14 +55,26 @@ func (a AskList) Less(i, j int) bool { return a[i].Price > a[j].Price }
 type OrderBook struct {
 	bids  BidList
 	asks  AskList
+	stops StopList
 	fills []Fill
+}
+
+type StopList []Order
+
+func (ob *OrderBook) AddOrder(order Order) {
+
+	if order.Side == "bid" {
+		ob.BidAdd(order)
+	} else if order.Side == "ask" {
+		ob.AskAdd(order)
+	}
 }
 
 func (ob *OrderBook) AskAdd(order Order) {
 
 	ob.asks = append(ob.asks, order)
 	sort.Sort(ob.asks)
-
+	ob.fire()
 	ob.execute(order)
 }
 
@@ -67,8 +82,12 @@ func (ob *OrderBook) BidAdd(order Order) {
 
 	ob.bids = append(ob.bids, order)
 	sort.Sort(ob.bids)
-
+	ob.fire()
 	ob.execute(order)
+}
+
+func (ob *OrderBook) AddStop(order Order) {
+	ob.stops = append(ob.stops, order)
 }
 
 func (ob *OrderBook) execute(order Order) {
@@ -213,8 +232,32 @@ func (ob *OrderBook) execute(order Order) {
 	ob.cleanComplete()
 }
 
+func (ob *OrderBook) fire() {
+
+	bestAsk := ob.asks[0].Price
+
+	fmt.Printf("Best Ask (BUY): %f\r\n", bestAsk)
+
+	//STOP MARKET SELL
+	for i := 0; i < len(ob.stops); i++ {
+		v := ob.stops[i]
+
+		if v.Stop <= bestAsk {
+
+			ob.bids = append(ob.bids, v)
+			sort.Sort(ob.bids)
+			ob.execute(v)
+
+			v.Status = COMPLETE
+
+			fmt.Printf("Triggered: %d\r\n", v.ID)
+		}
+	}
+}
+
 func (ob *OrderBook) cleanComplete() {
 
+	//SELL
 	for i := 0; i < len(ob.bids); i++ {
 		v := ob.bids[i]
 
@@ -226,6 +269,7 @@ func (ob *OrderBook) cleanComplete() {
 		i--
 	}
 
+	//ASK
 	for i := 0; i < len(ob.asks); i++ {
 		v := ob.asks[i]
 
@@ -234,6 +278,18 @@ func (ob *OrderBook) cleanComplete() {
 		}
 
 		ob.asks = append(ob.asks[:i], ob.asks[i+1:]...)
+		i--
+	}
+
+	//STOP
+	for i := 0; i < len(ob.stops); i++ {
+		v := ob.stops[i]
+
+		if v.Status != COMPLETE {
+			continue
+		}
+
+		ob.stops = append(ob.stops[:i], ob.stops[i+1:]...)
 		i--
 	}
 }
@@ -264,6 +320,7 @@ func NewOrderBook() *OrderBook {
 	return &OrderBook{
 		bids:  []Order{},
 		asks:  []Order{},
+		stops: []Order{},
 		fills: []Fill{},
 	}
 }

@@ -6,6 +6,28 @@ import (
 	"time"
 )
 
+func printOrderBook(ob *OrderBook) {
+	fmt.Println("FILLEDBOOK")
+	for i := 0; i < len(ob.fills); i++ {
+		fmt.Printf("Price: %f, Amonth: %f Order ID: %d, Matched ID: %d\r\n", ob.fills[i].Price, ob.fills[i].Amount, ob.fills[i].OrderID, ob.fills[i].MatchOrderID)
+	}
+
+	fmt.Println("ORDERBOOK BUYS")
+	if len(ob.asks) == 0 {
+		fmt.Println("---empty---")
+	}
+	for i := 0; i < len(ob.asks); i++ {
+		fmt.Printf("ID: %d, Amonth: %f\r\n", ob.asks[i].ID, ob.asks[i].Amount)
+	}
+
+	fmt.Println("ORDERBOOK SELLS")
+	if len(ob.bids) == 0 {
+		fmt.Println("---empty---")
+	}
+	for i := 0; i < len(ob.bids); i++ {
+		fmt.Printf("ID: %d, Amonth: %f\r\n", ob.bids[i].ID, ob.bids[i].Amount)
+	}
+}
 func TestSortingOrderBook(t *testing.T) {
 
 	ob := NewOrderBook()
@@ -194,7 +216,6 @@ func TestSellOrderSenaryoA(t *testing.T) {
 	}
 
 }
-
 func TestSellOrderSenaryoB(t *testing.T) {
 
 	ob := NewOrderBook()
@@ -291,4 +312,26 @@ func TestSellOrderSenaryoD(t *testing.T) {
 		fmt.Printf("Amonth: %f\r\n", ob.bids[i].Amount)
 	}
 
+}
+
+func TestStopMarketSellSenaryoA(t *testing.T) {
+
+	ob := NewOrderBook()
+
+	//BUY
+	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.1, Price: 30500, Time: time.Now()})
+	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.20, Price: 30300, Time: time.Now()})
+	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.80, Price: 30250, Time: time.Now()})
+
+	//SELL
+	ob.AddOrder(Order{ID: 4, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.90, Price: 30600, Time: time.Now()})
+	ob.AddOrder(Order{ID: 5, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.75, Price: 30700, Time: time.Now()})
+	ob.AddOrder(Order{ID: 6, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.20, Price: 31000, Time: time.Now()})
+
+	//STOP: 30.400
+	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: "bid", Stop: 30400, Amount: 1.0, Price: 0, Time: time.Now()})
+
+	ob.AddOrder(Order{ID: 8, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: "bid", Amount: 1.1, Price: 0, Time: time.Now()})
+
+	printOrderBook(ob)
 }
