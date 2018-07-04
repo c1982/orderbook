@@ -1,16 +1,17 @@
 package matching
 
 import (
-	"log"
+	"fmt"
 	"sort"
 	"time"
 )
 
 const (
-	COMPLETE = iota
+	COMPLETE = iota + 1
 	FILLED
 
 	MARKET = "market"
+	LIMIT  = "limit"
 )
 
 type Order struct {
@@ -20,10 +21,18 @@ type Order struct {
 	Second string
 	Time   time.Time
 	Status int
-	Type   string //market, limit, stop, stop limit
+	Type   string //market, limit, stop market, stop limit
 	Side   string
+	Stop   float64
 	Price  float64
 	Amount float64
+}
+
+type Fill struct {
+	MatchOrderID int
+	OrderID      int
+	Price        float64
+	Amount       float64
 }
 
 //BidList Bid price yüksekten düşüğe doğru sıralanacak.
@@ -41,8 +50,9 @@ func (a AskList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a AskList) Less(i, j int) bool { return a[i].Price > a[j].Price }
 
 type OrderBook struct {
-	bids BidList
-	asks AskList
+	bids  BidList
+	asks  AskList
+	fills []Fill
 }
 
 func (ob *OrderBook) AskAdd(order Order) {
@@ -57,34 +67,143 @@ func (ob *OrderBook) BidAdd(order Order) {
 
 	ob.bids = append(ob.bids, order)
 	sort.Sort(ob.bids)
+
+	ob.execute(order)
 }
 
 func (ob *OrderBook) execute(order Order) {
 
+	orderIndex := ob.getIndex(order)
+
 	if order.Type == MARKET {
 		if order.Side == "ask" {
 
-			log.Printf("Amount: %f", order.Amount)
-			var amnt float64
+			fmt.Printf("Amount: %f\r\n", order.Amount)
+
 			for i, iter := range ob.bids {
 
-				if order.Amount == iter.Amount {
-					//Full
-				} else if order.Amount > iter.Amount {
-					//Filled
-					amnt = iter.Amount
+				if order.Amount >= iter.Amount {
+
 					order.Amount -= iter.Amount
+					ob.asks[orderIndex].Amount = order.Amount
+
 					ob.bids[i].Amount = 0
+					ob.bids[i].Status = COMPLETE
+
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+
 				} else if order.Amount < iter.Amount {
-					//Filled
-					amnt = order.Amount
+
 					ob.bids[i].Amount -= order.Amount
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount, Price: iter.Price})
 					order.Amount = 0
+					ob.asks[orderIndex].Amount = order.Amount
 				}
 
-				log.Printf("Amount: %f Bid: %f", order.Amount, amnt)
+				if order.Amount == 0 {
+					order.Status = COMPLETE
+					ob.asks[orderIndex].Status = order.Status
+					break
+				}
+			}
+		}
+
+		if order.Side == "bid" {
+
+			fmt.Printf("Amount: %f\r\n", order.Amount)
+
+			for i, iter := range ob.asks {
+
+				if order.Amount >= iter.Amount {
+
+					order.Amount -= iter.Amount
+					ob.bids[orderIndex].Amount = order.Amount
+
+					ob.asks[i].Amount = 0
+					ob.asks[i].Status = COMPLETE
+
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+
+				} else if order.Amount < iter.Amount {
+
+					ob.asks[i].Amount -= order.Amount
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount, Price: iter.Price})
+					order.Amount = 0
+					ob.bids[orderIndex].Amount = order.Amount
+				}
 
 				if order.Amount == 0 {
+					order.Status = COMPLETE
+					ob.bids[orderIndex].Status = order.Status
+					break
+				}
+			}
+		}
+	}
+
+	if order.Type == LIMIT {
+
+		if order.Side == "ask" {
+			for i, iter := range ob.bids {
+
+				if iter.Price > order.Price {
+					continue
+				}
+
+				if order.Amount >= iter.Amount {
+
+					order.Amount -= iter.Amount
+					ob.asks[orderIndex].Amount = order.Amount
+					ob.bids[i].Amount = 0
+					ob.bids[i].Status = COMPLETE
+
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+
+				} else if order.Amount < iter.Amount {
+
+					ob.bids[i].Amount -= order.Amount
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount, Price: iter.Price})
+					order.Amount = 0
+					ob.asks[orderIndex].Amount = order.Amount
+				}
+
+				if order.Amount == 0 {
+					order.Status = COMPLETE
+					ob.asks[orderIndex].Status = order.Status
+
+					break
+				}
+			}
+		}
+
+		if order.Side == "bid" {
+			for i, iter := range ob.asks {
+
+				if iter.Price < order.Price {
+					continue
+				}
+
+				if order.Amount >= iter.Amount {
+
+					order.Amount -= iter.Amount
+					ob.bids[orderIndex].Amount = order.Amount
+					ob.asks[i].Amount = 0
+					ob.asks[i].Status = COMPLETE
+
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+
+				} else if order.Amount < iter.Amount {
+
+					ob.asks[i].Amount -= order.Amount
+					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount, Price: iter.Price})
+					order.Amount = 0
+					ob.bids[orderIndex].Amount = order.Amount
+				}
+
+				if order.Amount == 0 {
+					order.Status = COMPLETE
+					ob.bids[orderIndex].Status = order.Status
+
 					break
 				}
 			}
@@ -96,21 +215,56 @@ func (ob *OrderBook) execute(order Order) {
 
 func (ob *OrderBook) cleanComplete() {
 
-	for _, v := range ob.bids {
-		if v.Status != 1 {
+	for i := 0; i < len(ob.bids); i++ {
+		v := ob.bids[i]
+
+		if v.Status != COMPLETE {
 			continue
 		}
 
-		//bids'den  bu order'ı sil.
-
+		ob.bids = append(ob.bids[:i], ob.bids[i+1:]...)
+		i--
 	}
+
+	for i := 0; i < len(ob.asks); i++ {
+		v := ob.asks[i]
+
+		if v.Status != COMPLETE {
+			continue
+		}
+
+		ob.asks = append(ob.asks[:i], ob.asks[i+1:]...)
+		i--
+	}
+}
+
+func (ob *OrderBook) getIndex(o Order) int {
+
+	if o.Side == "ask" {
+		for i := 0; i < len(ob.asks); i++ {
+			if o.ID == ob.asks[i].ID {
+				return i
+			}
+		}
+	}
+
+	if o.Side == "bid" {
+		for i := 0; i < len(ob.bids); i++ {
+			if o.ID == ob.bids[i].ID {
+				return i
+			}
+		}
+	}
+
+	return -1
 }
 
 func NewOrderBook() *OrderBook {
 
 	return &OrderBook{
-		bids: []Order{},
-		asks: []Order{},
+		bids:  []Order{},
+		asks:  []Order{},
+		fills: []Fill{},
 	}
 }
 
