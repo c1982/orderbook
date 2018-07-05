@@ -68,13 +68,13 @@ func (ob *OrderBook) AddOrder(order Order) {
 	order.SAmount = order.Price * order.Amount
 
 	if order.Side == "bid" {
-		ob.BidAdd(order)
+		ob.bidAdd(order)
 	} else if order.Side == "ask" {
-		ob.AskAdd(order)
+		ob.askAdd(order)
 	}
 }
 
-func (ob *OrderBook) AskAdd(order Order) {
+func (ob *OrderBook) askAdd(order Order) {
 
 	ob.asks = append(ob.asks, order)
 	sort.Sort(ob.asks)
@@ -82,7 +82,7 @@ func (ob *OrderBook) AskAdd(order Order) {
 	ob.fire()
 }
 
-func (ob *OrderBook) BidAdd(order Order) {
+func (ob *OrderBook) bidAdd(order Order) {
 
 	ob.bids = append(ob.bids, order)
 	sort.Sort(ob.bids)
@@ -104,34 +104,61 @@ func (ob *OrderBook) execute(order Order) {
 		if order.Side == "ask" {
 
 			if order.Easy {
-				//Kolay al sat gelecek.
-			}
 
-			//TODO: kolay al sat için
-			for i, iter := range ob.bids {
+				for i, iter := range ob.bids {
 
-				if order.Amount >= iter.SAmount {
+					if order.Amount >= iter.SAmount {
 
-					order.Amount -= iter.SAmount
-					ob.asks[orderIndex].Amount = order.Amount
+						order.Amount -= iter.SAmount
+						ob.asks[orderIndex].Amount = order.Amount
 
-					ob.bids[i].Amount = 0
-					ob.bids[i].Status = COMPLETE
+						ob.bids[i].Amount = 0
+						ob.bids[i].Status = COMPLETE
 
-					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+						ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
 
-				} else if order.Amount < iter.SAmount {
+					} else if order.Amount < iter.SAmount {
 
-					ob.bids[i].Amount -= (order.Amount / iter.Price)
-					ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount / iter.Price, Price: iter.Price})
-					order.Amount = 0
-					ob.asks[orderIndex].Amount = order.Amount
+						ob.bids[i].Amount -= (order.Amount / iter.Price)
+						ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount / iter.Price, Price: iter.Price})
+						order.Amount = 0
+						ob.asks[orderIndex].Amount = order.Amount
+					}
+
+					if order.Amount == 0 {
+						order.Status = COMPLETE
+						ob.asks[orderIndex].Status = order.Status
+						break
+					}
 				}
 
-				if order.Amount == 0 {
-					order.Status = COMPLETE
-					ob.asks[orderIndex].Status = order.Status
-					break
+			} else {
+
+				for i, iter := range ob.bids {
+
+					if order.Amount >= iter.Amount {
+
+						order.Amount -= iter.Amount
+						ob.asks[orderIndex].Amount = order.Amount
+
+						ob.bids[i].Amount = 0
+						ob.bids[i].Status = COMPLETE
+
+						ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: iter.Amount, Price: iter.Price})
+
+					} else if order.Amount < iter.Amount {
+
+						ob.bids[i].Amount -= order.Amount
+						ob.fills = append(ob.fills, Fill{MatchOrderID: order.ID, OrderID: iter.ID, Amount: order.Amount, Price: iter.Price})
+						order.Amount = 0
+						ob.asks[orderIndex].Amount = order.Amount
+					}
+
+					if order.Amount == 0 {
+						order.Status = COMPLETE
+						ob.asks[orderIndex].Status = order.Status
+						break
+					}
 				}
 			}
 		}
