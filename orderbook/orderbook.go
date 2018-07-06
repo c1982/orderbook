@@ -1,4 +1,4 @@
-package matching
+package orderbook
 
 import (
 	"fmt"
@@ -115,7 +115,7 @@ func (ob *OrderBook) AddOrder(order Order) {
 		ob.askAdd(order)
 	}
 
-	ob.fire()
+	ob.fire() //Stoplar
 }
 
 func (ob *OrderBook) askAdd(order Order) {
