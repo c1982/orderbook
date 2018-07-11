@@ -1,0 +1,308 @@
+<html>
+
+<head>
+  <title>OB</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="/js/semantic.min.css">
+  <script src="/js/jquery.js"></script>
+  <script src="/js/semantic.min.js"></script>
+  <script src="/js/app.js"></script>
+</head>
+
+<body>
+
+
+  <div class="ui stackable padded two column grid">
+    <div class="row">
+      <div class="four wide column">
+    
+            <div class="ui top attached tabular menu">
+                <a class="item active" data-tab="first">Piyasa</a>
+                <a class="item" data-tab="second">Limit</a>
+                <a class="item" data-tab="third">Stop</a>
+              </div>
+              <div class="ui bottom attached tab segment active" data-tab="first">
+
+                  <div id="piyasa">
+
+                  <div class="ui secondary menu">
+                      <a class="item active" data-tab="piyasa-alis">ALIŞ</a>
+                      <a class="item" data-tab="piyasa-satis">SATIŞ</a>
+                  </div>
+
+                  <div class="ui tab active" data-tab="piyasa-alis">
+
+                    <div class="ui right labeled input">
+                          <label for="amount" class="ui label">TRY</label>
+                          <input type="text" placeholder="Miktar" id="amount">
+                          <div class="ui basic label">.00</div>
+                    </div>
+
+                    <div class="row" style="margin-top:1em">
+                    <button class="ui button primary">Alış Emri Gir</button>
+                    </div>
+
+                  </div>
+
+                    <div class="ui tab" data-tab="piyasa-satis">
+
+                      <div class="row">
+                        <div class="ui right labeled input">
+                            <label for="amount" class="ui label">BTC</label>
+                            <input type="text" placeholder="Miktar" id="amount">
+                            <div class="ui basic label">.00</div>
+                        </div>
+                      </div>
+
+                      <div class="row" style="margin-top:1em">
+                        <button class="ui button primary">Satış Emri Gir</button>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+              </div>
+              <div class="ui bottom attached tab segment" data-tab="second">
+                
+                  <div id="limit">
+
+                      <div class="ui secondary menu">
+                          <a class="item active" data-tab="limit-alis">ALIŞ</a>
+                          <a class="item" data-tab="limit-satis">SATIŞ</a>
+                      </div>
+    
+                      <div class="ui tab active" data-tab="limit-alis">
+    
+                          <div class="ui right labeled input">
+                              <input type="text" placeholder="Fiyat">
+                              <div class="ui basic label">
+                                BTC/TRY
+                              </div>
+                            </div>
+    
+                            <div class="row" style="margin-top:1em">
+                            <div class="ui right labeled input">
+                                <input type="text" placeholder="Miktar">
+                                <div class="ui basic label">
+                                  BTC
+                                </div>
+                              </div>
+                            </div>
+
+                          <div class="row" style="margin-top:1em">
+                            <button class="ui button primary">Alış Emri Gir</button>
+                          </div>
+    
+                      </div>
+    
+                        <div class="ui tab" data-tab="limit-satis">
+    
+                            <div class="ui right labeled input">
+                                <input type="text" placeholder="Fiyat">
+                                <div class="ui basic label">
+                                  BTC/TRY
+                                </div>
+                              </div>
+      
+                              <div class="row" style="margin-top:1em">
+                              <div class="ui right labeled input">
+                                  <input type="text" placeholder="Miktar">
+                                  <div class="ui basic label">
+                                    BTC
+                                  </div>
+                                </div>
+                              </div>
+  
+                            <div class="row" style="margin-top:1em">
+                              <button class="ui button primary">Satış Emri Gir</button>
+                            </div>
+                          
+                        </div>
+    
+                      </div>
+
+
+              </div>
+              <div class="ui bottom attached tab segment" data-tab="third">
+                
+                  <div id="stop">
+
+                      <div class="ui secondary menu">
+                          <a class="item active" data-tab="stop-alis">ALIŞ</a>
+                          <a class="item" data-tab="stop-satis">SATIŞ</a>
+                      </div>
+    
+                      <div class="ui tab active" data-tab="stop-alis">
+
+                          <div id="stop-alis">
+                          
+                            <div class="ui secondary menu">
+                                <a class="item active" data-tab="piyasa-stop-alis">Piyasa</a>
+                                <a class="item" data-tab="limit-stop-alis">Limit</a>
+                            </div>
+
+                            <div class="ui tab active" data-tab="piyasa-stop-alis">
+                            
+                                <div class="ui right labeled input">
+                                    <input type="text" placeholder="Tetiklenme Fiyatı">
+                                    <div class="ui basic label">
+                                      BTC/TRY
+                                    </div>
+                                  </div>
+
+                                  <div class="row" style="margin-top:1em">
+
+                                <div class="ui right labeled input">
+                                    <label for="amount" class="ui label">TRY</label>
+                                    <input type="text" placeholder="Miktar" id="amount">
+                                    <div class="ui basic label">.00</div>
+                              </div>
+                              </div>
+          
+                              <div class="row" style="margin-top:1em">
+                                <button class="ui button primary">Alış Emri Gir</button>
+                              </div>
+
+                            </div>
+                      
+                            <div class="ui tab" data-tab="limit-stop-alis">
+                                
+                                <div class="ui right labeled input">
+                                    <input type="text" placeholder="Tetiklenme Fiyatı">
+                                    <div class="ui basic label">
+                                      BTC/TRY
+                                    </div>
+                                  </div>
+
+                                  <div class="row" style="margin-top:1em">
+
+                                <div class="ui right labeled input">
+                                    <input type="text" placeholder="Fiyat">
+                                    <div class="ui basic label">
+                                      BTC/TRY
+                                    </div>
+                                  </div>
+                                  </div>
+          
+                                  <div class="row" style="margin-top:1em">
+
+                                  <div class="ui right labeled input">
+                                      <input type="text" placeholder="Miktar">
+                                      <div class="ui basic label">
+                                        BTC
+                                      </div>
+                                    </div>
+                                  </div>
+      
+                                <div class="row" style="margin-top:1em">
+                                  <button class="ui button primary">Alış Emri Gir</button>
+                                </div>
+
+
+                            </div>
+
+                          </div>
+
+                      </div>
+    
+                        <div class="ui tab" data-tab="stop-satis">
+    
+                            <div id="stop-satis">
+                          
+                                <div class="ui secondary menu">
+                                    <a class="item active" data-tab="piyasa-stop-satis">Piyasa</a>
+                                    <a class="item" data-tab="limit-stop-satis">Limit</a>
+                                </div>
+    
+                                <div class="ui tab active" data-tab="piyasa-stop-satis">
+                                    
+
+                                    
+
+                                        <div class="ui right labeled input">
+                                            <input type="text" placeholder="Tetiklenme Fiyatı">
+                                            <div class="ui basic label">
+                                              BTC/TRY
+                                            </div>
+                                          </div>
+                                          <div class="row" style="margin-top:1em">
+
+                                        <div class="ui right labeled input">
+                                            <label for="amount" class="ui label">BTC</label>
+                                            <input type="text" placeholder="Miktar" id="amount">
+                                            <div class="ui basic label">.00</div>
+                                        </div>
+                                      </div>
+                
+                                      <div class="row" style="margin-top:1em">
+                                        <button class="ui button primary">Satış Emri Gir</button>
+                                      </div>
+
+
+                                </div>
+                          
+                                <div class="ui tab" data-tab="limit-stop-satis">
+                                   
+
+                                    <div class="ui right labeled input">
+                                        <input type="text" placeholder="Tetiklenme Fiyatı">
+                                        <div class="ui basic label">
+                                          BTC/TRY
+                                        </div>
+                                      </div>
+                                  
+
+
+                                      <div class="row" style="margin-top:1em">
+                                      <div class="ui right labeled input">
+                                          <input type="text" placeholder="Fiyat">
+                                          <div class="ui basic label">
+                                            BTC/TRY
+                                          </div>
+                                        </div>
+                                    </div>
+              
+                                      <div class="row" style="margin-top:1em">
+                                        
+                                      <div class="ui right labeled input">
+                                          <input type="text" placeholder="Miktar">
+                                          <div class="ui basic label">
+                                            BTC
+                                          </div>
+                                        </div>
+                                      </div>
+          
+                                    <div class="row" style="margin-top:1em">
+                                      <button class="ui button primary">Satış Emri Gir</button>
+                                    </div>
+
+
+                                </div>
+                              </div>
+
+                          
+                        </div>
+    
+                  </div>
+
+
+              </div>
+
+      </div>
+      <div class="twelve wide column">
+        <div class="ui segment">
+          menü
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+  $('.menu .item').tab();
+  </script>
+
+</body>
+</html>
