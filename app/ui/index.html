@@ -35,12 +35,12 @@
 
                     <div class="ui right labeled input">
                           <label for="amount" class="ui label">TRY</label>
-                          <input type="text" placeholder="Miktar" id="amount">
+                          <input type="text" placeholder="Miktar" id="piyasa-alis-try">
                           <div class="ui basic label">.00</div>
                     </div>
 
                     <div class="row" style="margin-top:1em">
-                    <button class="ui button primary">Alış Emri Gir</button>
+                      <button class="ui button primary" id="piyasa-alis-emri">Alış Emri Gir</button>
                     </div>
 
                   </div>
@@ -50,13 +50,13 @@
                       <div class="row">
                         <div class="ui right labeled input">
                             <label for="amount" class="ui label">BTC</label>
-                            <input type="text" placeholder="Miktar" id="amount">
+                            <input type="text" placeholder="Miktar" id="piyasa-satis-btc">
                             <div class="ui basic label">.00</div>
                         </div>
                       </div>
 
                       <div class="row" style="margin-top:1em">
-                        <button class="ui button primary">Satış Emri Gir</button>
+                        <button class="ui button primary" id="piyasa-satis-emri">Satış Emri Gir</button>
                       </div>
 
                     </div>
@@ -76,7 +76,7 @@
                       <div class="ui tab active" data-tab="limit-alis">
     
                           <div class="ui right labeled input">
-                              <input type="text" placeholder="Fiyat">
+                              <input type="text" placeholder="Fiyat" id="limit-alis-fiyat">
                               <div class="ui basic label">
                                 BTC/TRY
                               </div>
@@ -84,7 +84,7 @@
     
                             <div class="row" style="margin-top:1em">
                             <div class="ui right labeled input">
-                                <input type="text" placeholder="Miktar">
+                                <input type="text" placeholder="Miktar" id="limit-alis-miktar">
                                 <div class="ui basic label">
                                   BTC
                                 </div>
@@ -92,7 +92,7 @@
                             </div>
 
                           <div class="row" style="margin-top:1em">
-                            <button class="ui button primary">Alış Emri Gir</button>
+                            <button class="ui button primary" id="limit-alis-emri">Alış Emri Gir</button>
                           </div>
     
                       </div>
@@ -100,7 +100,7 @@
                         <div class="ui tab" data-tab="limit-satis">
     
                             <div class="ui right labeled input">
-                                <input type="text" placeholder="Fiyat">
+                                <input type="text" placeholder="Fiyat" id="limit-satis-fiyat">
                                 <div class="ui basic label">
                                   BTC/TRY
                                 </div>
@@ -108,7 +108,7 @@
       
                               <div class="row" style="margin-top:1em">
                               <div class="ui right labeled input">
-                                  <input type="text" placeholder="Miktar">
+                                  <input type="text" placeholder="Miktar" id="limit-satis-miktar">
                                   <div class="ui basic label">
                                     BTC
                                   </div>
@@ -116,7 +116,7 @@
                               </div>
   
                             <div class="row" style="margin-top:1em">
-                              <button class="ui button primary">Satış Emri Gir</button>
+                              <button class="ui button primary" id="limit-satis-emri">Satış Emri Gir</button>
                             </div>
                           
                         </div>
@@ -145,24 +145,23 @@
 
                             <div class="ui tab active" data-tab="piyasa-stop-alis">
                             
-                                <div class="ui right labeled input">
-                                    <input type="text" placeholder="Tetiklenme Fiyatı">
-                                    <div class="ui basic label">
-                                      BTC/TRY
-                                    </div>
-                                  </div>
+                              <div class="ui right labeled input">
+                                    <input type="text" placeholder="Tetiklenme Fiyatı" id="piyasa-stop-alis-trigger">
+                                    <div class="ui basic label">BTC/TRY</div>
+                              </div>
 
-                                  <div class="row" style="margin-top:1em">
+                              <div class="row" style="margin-top:1em">
 
                                 <div class="ui right labeled input">
                                     <label for="amount" class="ui label">TRY</label>
-                                    <input type="text" placeholder="Miktar" id="amount">
+                                    <input type="text" placeholder="Miktar" id="piyasa-stop-alis-miktar">
                                     <div class="ui basic label">.00</div>
-                              </div>
+                                </div>
+
                               </div>
           
                               <div class="row" style="margin-top:1em">
-                                <button class="ui button primary">Alış Emri Gir</button>
+                                <button class="ui button primary" id="piyasa-stop-alis-emri">Alış Emri Gir</button>
                               </div>
 
                             </div>
@@ -170,7 +169,7 @@
                             <div class="ui tab" data-tab="limit-stop-alis">
                                 
                                 <div class="ui right labeled input">
-                                    <input type="text" placeholder="Tetiklenme Fiyatı">
+                                    <input type="text" placeholder="Tetiklenme Fiyatı" id="limit-stop-alis-trigger">
                                     <div class="ui basic label">
                                       BTC/TRY
                                     </div>
@@ -179,7 +178,7 @@
                                   <div class="row" style="margin-top:1em">
 
                                 <div class="ui right labeled input">
-                                    <input type="text" placeholder="Fiyat">
+                                    <input type="text" placeholder="Fiyat"  id="limit-stop-alis-fiyat">
                                     <div class="ui basic label">
                                       BTC/TRY
                                     </div>
@@ -189,7 +188,7 @@
                                   <div class="row" style="margin-top:1em">
 
                                   <div class="ui right labeled input">
-                                      <input type="text" placeholder="Miktar">
+                                      <input type="text" placeholder="Miktar" id="limit-stop-alis-miktar">
                                       <div class="ui basic label">
                                         BTC
                                       </div>
@@ -197,7 +196,7 @@
                                   </div>
       
                                 <div class="row" style="margin-top:1em">
-                                  <button class="ui button primary">Alış Emri Gir</button>
+                                  <button class="ui button primary"  id="limit-stop-alis-emri">Alış Emri Gir</button>
                                 </div>
 
 
@@ -218,11 +217,8 @@
     
                                 <div class="ui tab active" data-tab="piyasa-stop-satis">
                                     
-
-                                    
-
                                         <div class="ui right labeled input">
-                                            <input type="text" placeholder="Tetiklenme Fiyatı">
+                                            <input type="text" placeholder="Tetiklenme Fiyatı" id="piyasa-stop-satis-trigger">
                                             <div class="ui basic label">
                                               BTC/TRY
                                             </div>
@@ -231,13 +227,13 @@
 
                                         <div class="ui right labeled input">
                                             <label for="amount" class="ui label">BTC</label>
-                                            <input type="text" placeholder="Miktar" id="amount">
+                                            <input type="text" placeholder="Miktar" id="piyasa-stop-satis-miktar">
                                             <div class="ui basic label">.00</div>
                                         </div>
                                       </div>
                 
                                       <div class="row" style="margin-top:1em">
-                                        <button class="ui button primary">Satış Emri Gir</button>
+                                        <button class="ui button primary" id="piyasa-stop-satis-emri">Satış Emri Gir</button>
                                       </div>
 
 
@@ -247,37 +243,32 @@
                                    
 
                                     <div class="ui right labeled input">
-                                        <input type="text" placeholder="Tetiklenme Fiyatı">
+                                        <input type="text" placeholder="Tetiklenme Fiyatı" id="limit-stop-satis-trigger">
                                         <div class="ui basic label">
                                           BTC/TRY
                                         </div>
                                       </div>
                                   
-
-
                                       <div class="row" style="margin-top:1em">
                                       <div class="ui right labeled input">
-                                          <input type="text" placeholder="Fiyat">
+                                          <input type="text" placeholder="Fiyat" id="limit-stop-satis-fiyat">
                                           <div class="ui basic label">
                                             BTC/TRY
                                           </div>
                                         </div>
                                     </div>
               
-                                      <div class="row" style="margin-top:1em">
-                                        
+                                    <div class="row" style="margin-top:1em">
+                                      
                                       <div class="ui right labeled input">
-                                          <input type="text" placeholder="Miktar">
-                                          <div class="ui basic label">
-                                            BTC
-                                          </div>
-                                        </div>
+                                        <input type="text" placeholder="Miktar" id="limit-stop-satis-miktar">
+                                        <div class="ui basic label">BTC</div>
                                       </div>
+                                    </div>
           
                                     <div class="row" style="margin-top:1em">
-                                      <button class="ui button primary">Satış Emri Gir</button>
+                                      <button class="ui button primary" id="limit-stop-satis-emri">Satış Emri Gir</button>
                                     </div>
-
 
                                 </div>
                               </div>
@@ -291,17 +282,244 @@
               </div>
 
       </div>
-      <div class="twelve wide column">
+      <div class="eight wide column">
         <div class="ui segment">
-          menü
+
+
+          <div class="ui grid">
+
+              <div class="eight wide column">
+              
+              <h4>ALIŞLAR</h4>
+
+                  <table class="ui very basic collapsing celled table" style="width:100%" id="asks-table">
+                    <thead>
+                      <th>Miktar (BTC)</th>
+                      <th>Fiyat (TRY)</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">Henüz bir emir yok.</td>
+                        </tr>
+                    </tbody>
+                  </table>
+
+                </div>
+                <div class="eight wide column">
+
+                    <h4>SATIŞLAR</h4>
+
+                    <table class="ui very basic collapsing celled table" style="width:100%" id="bids-table">
+                        <thead>
+                          <th>Fiyat (TRY)</th>
+                          <th>Miktar (BTC)</th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2">Henüz bir emir yok.</td>
+                              </tr>
+                        </tbody>
+                      </table>
+
+                  </div>
+
+          </div>
         </div>
       </div>
+      <div class="four wide column">
+          <div class="ui segment">
+           
+              <table class="ui very basic collapsing celled table" style="width:100%" id="fill-table">
+                  <thead>
+                    <th>Süre</th>
+                    <th>Fiyat</th>
+                    <th>Miktar</th>
+                  </thead>
+                  <tbody>
+                      <tr>
+                          <td colspan="3">henüz işlem gerçekleşmedi.</td>
+                      </tr>
+                  </tbody>
+                </table>
+
+          </div>
+        </div>
 
     </div>
   </div>
 
   <script>
+
+  var url = 'ws://' + window.location.host + '/book';
+  var c = new WebSocket(url);
+  var msecPerMinute = 1000 * 60;
+  var msecPerHour = msecPerMinute * 60;
+
   $('.menu .item').tab();
+
+  function sendOrder(side, type, amount, price, easy, trigger, stop){
+  
+    req = JSON.stringify({
+        side: side,
+        type: type,
+        amount: amount,
+        price:price,
+        easy: easy,
+        trigger: trigger,
+        stop: stop,
+    });
+
+    $.ajax({
+      url : "/add",
+      type: "post",
+      data: req,
+      dataType: "json",
+      contentType: "application/json",
+      success: function(data, status){
+          //alert("Data: " + data + "\nStatus: " + status);
+      }
+    });
+
+  }
+
+  $('#piyasa-alis-emri').click(function (){
+  
+    miktar = $('#piyasa-alis-try').val();
+    miktarflo =  parseFloat(miktar);
+
+    sendOrder("ask","market", miktarflo, 0, true,0, false);
+
+  });
+
+  $('#piyasa-satis-emri').click(function (){
+  
+    miktar = $('#piyasa-satis-btc').val();
+    miktarflo =  parseFloat(miktar);
+
+    sendOrder("bid","market", miktarflo, 0, false, 0, false);
+  
+  });
+
+  $('#limit-alis-emri').click(function (){  
+    miktar = $('#limit-alis-miktar').val();
+    fiyat = $('#limit-alis-fiyat').val();
+    miktarflo =  parseFloat(miktar);
+    fiyatflo =  parseFloat(fiyat);
+
+    sendOrder("ask","limit", miktarflo, fiyatflo, false, 0, false);
+  });
+
+  $('#limit-satis-emri').click(function (){
+    miktar = $('#limit-satis-miktar').val();
+    fiyat = $('#limit-satis-fiyat').val();
+    miktarflo =  parseFloat(miktar);
+    fiyatflo =  parseFloat(fiyat);
+
+    sendOrder("bid","limit", miktarflo, fiyatflo, false,0, false);
+  });
+
+  $('#limit-stop-alis-emri').click(function (){
+
+    trigger = $('#limit-stop-alis-trigger').val();
+    price = $('#limit-stop-alis-fiyat').val();
+    miktar = $('#limit-stop-alis-miktar').val();
+
+    miktarflo =  parseFloat(miktar);
+    triggerflo =  parseFloat(trigger);
+    priceflo = parseFloat(price);
+
+    sendOrder("ask","limit", miktarflo, priceflo, false, triggerflo, true);
+
+  });
+
+  $('#limit-stop-satis-emri').click(function (){
+
+    trigger = $('#limit-stop-satis-trigger').val();
+    price = $('#limit-stop-satis-fiyat').val();
+    miktar = $('#limit-stop-satis-miktar').val();
+
+    miktarflo =  parseFloat(miktar);
+    triggerflo =  parseFloat(trigger);
+    priceflo = parseFloat(price);
+
+    sendOrder("bid","limit", miktarflo, priceflo, false, triggerflo, true);
+  });
+
+  $('#piyasa-stop-alis-emri').click(function (){
+    trigger = $('#piyasa-stop-alis-trigger').val();
+    miktar = $('#piyasa-stop-alis-miktar').val();
+
+    miktarflo =  parseFloat(miktar);
+    triggerflo =  parseFloat(trigger);
+
+    sendOrder("ask","market", miktarflo, 0, true, triggerflo, true);
+  });
+
+  $('#piyasa-stop-satis-emri').click(function (){
+
+    trigger = $('#piyasa-stop-satis-trigger').val();
+    price = 0;
+    miktar = $('#piyasa-stop-satis-miktar').val();
+
+    miktarflo =  parseFloat(miktar);
+    triggerflo =  parseFloat(trigger);
+    priceflo = parseFloat(price);
+
+    sendOrder("bid","market", miktarflo, priceflo, false, triggerflo, true);
+  });
+
+
+  c.onmessage = function(msg) {
+  flush(msg);
+  };
+
+   function flush(msg){
+      var now = new Date();
+      asktbl = "";
+      bidtbl = "";
+      filltbl = "";
+
+      console.debug(msg.data);
+      data = JSON.parse(msg.data);
+
+      $.each(data.asks, function (k, v) {
+        asktbl += "<tr>";
+          asktbl += "<td>" + v.amount +"</td>";
+          asktbl += "<td>" + v.price +"</td>";
+        asktbl += "</tr>";
+      });
+
+      $.each(data.bids, function (k, v) {
+        bidtbl += "<tr>";
+          bidtbl += "<td>" + v.price +"</td>";
+        bidtbl += "<td>" + v.amount +"</td>";
+        bidtbl += "</tr>";
+      });
+
+      $.each(data.fills, function (k, v) {
+        currtime = new Date(v.time);
+        interval =  now.getTime() - currtime;
+        var minutes = Math.floor(interval / msecPerMinute );
+
+        filltbl += "<tr>";
+        filltbl += "<td>" + minutes +"dk</td>";
+        filltbl += "<td>" + v.price +"</td>";
+        filltbl += "<td>" + v.amount +"</td>";
+        filltbl += "</tr>";
+      });
+
+      if (asktbl != ""){
+        $("#asks-table > tbody").html(asktbl);
+      }
+
+      if (bidtbl != ""){
+        $("#bids-table > tbody").html(bidtbl);
+      }
+
+      if(filltbl != ""){
+        $("#fill-table > tbody").html(filltbl);
+      }
+   }
   </script>
 
 </body>

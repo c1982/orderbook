@@ -1,6 +1,7 @@
 package orderbook
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"time"
@@ -24,37 +25,38 @@ var MakerCommFee = 0.001
 var TakerCommFee = 0.002
 
 type Order struct {
-	ID      int
-	UserID  int
-	Base    string
-	Second  string
-	Time    time.Time
-	Status  int
-	Type    string //market, limit, stop market, stop limit
-	Side    string
-	Stop    float64
-	Price   float64
-	SAmount float64
-	Easy    bool
-	Amount  float64
+	ID      int64     `json:"id"`
+	UserID  int       `json:"-"`
+	Base    string    `json:"base"`
+	Second  string    `json:"second"`
+	Time    time.Time `json:"time"`
+	Status  int       `json:"status"`
+	Type    string    `json:"type"` //market, limit, stop market, stop limit
+	Side    string    `json:"side"`
+	Stop    float64   `json:"stop"`
+	Price   float64   `json:"price"`
+	SAmount float64   `json:"-"`
+	Easy    bool      `json:"easy"`
+	Amount  float64   `json:"amount"`
 }
 
 type OrderBook struct {
 	bids  BidList
 	asks  AskList
 	stops StopList
-	fills []Fill
+	fills FillList
 }
 
 type Fill struct {
-	BidOrder Order
-	AskOrder Order
-	Price    float64
-	Amount   float64
-	Maker    bool
-	Fee      float64
-	SideFee  float64
-	Taker    bool
+	BidOrder Order     `json:"-"`
+	AskOrder Order     `json:"-"`
+	Time     time.Time `json:"time"`
+	Price    float64   `json:"price"`
+	Amount   float64   `json:"amount"`
+	Maker    bool      `json:"maker"`
+	Fee      float64   `json:"fee"`
+	SideFee  float64   `json:"sidefee"`
+	Taker    bool      `json:"taker"`
 }
 
 func (f *Fill) fee() {
@@ -88,6 +90,8 @@ func (f *Fill) String() {
 		f.Taker)
 }
 
+type FillList []Fill
+
 type AskList []Order
 
 type StopList []Order
@@ -104,6 +108,11 @@ func (b BidList) Less(i, j int) bool { return b[i].Price < b[j].Price }
 func (a AskList) Len() int           { return len(a) }
 func (a AskList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a AskList) Less(i, j int) bool { return a[i].Price > a[j].Price }
+
+//Filed book sıralaması tarihe göre yapılır.
+func (f FillList) Len() int           { return len(f) }
+func (f FillList) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
+func (f FillList) Less(i, j int) bool { return f[i].Time.After(f[j].Time) }
 
 func (ob *OrderBook) AddOrder(order Order) {
 
@@ -138,7 +147,29 @@ func (ob *OrderBook) AddStop(order Order) {
 
 func (ob *OrderBook) AddFill(bid, ask Order, price, amonth float64, taker bool) {
 
-	ob.fills = append(ob.fills, Fill{BidOrder: bid, AskOrder: ask, Price: price, Amount: amonth, Taker: taker})
+	ob.fills = append(ob.fills, Fill{BidOrder: bid, AskOrder: ask, Price: price, Amount: amonth, Taker: taker, Time: time.Now()})
+	sort.Sort(ob.fills)
+}
+
+func (ob *OrderBook) ToList() []byte {
+
+	export := struct {
+		Bids  BidList  `json:"bids"`
+		Asks  AskList  `json:"asks"`
+		Fills FillList `json:"fills"`
+	}{
+		Bids:  ob.bids,
+		Asks:  ob.asks,
+		Fills: ob.fills,
+	}
+
+	data, err := json.Marshal(export)
+
+	if err != nil {
+		return nil
+	}
+
+	return data
 }
 
 func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
