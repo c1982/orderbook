@@ -124,7 +124,7 @@ func (ob *OrderBook) AddOrder(order Order) {
 		ob.askAdd(order)
 	}
 
-	ob.fire() //Stoplar
+	ob.fire()
 }
 
 func (ob *OrderBook) askAdd(order Order) {
@@ -235,8 +235,6 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 }
 
 func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
-
-	fmt.Printf("Sell Amount: %f\r\n", order.Amount)
 
 	for i, iter := range ob.asks {
 
@@ -378,24 +376,24 @@ func (ob *OrderBook) fire() {
 	for i := 0; i < len(ob.stops); i++ {
 		v := ob.stops[i]
 
+		//TODO: Eşitlik?
 		if v.Side == ASKbuy {
 
 			if v.Stop >= bestAsk {
 
+				ob.stops[i].Status = COMPLETE
 				ob.askAdd(v)
-				v.Status = COMPLETE
-
-				fmt.Printf("Triggered: %d\r\n", v.ID)
+				fmt.Printf("Triggered: %d (Side:%s)\r\n", v.ID, v.Side)
 			}
 
 		} else if v.Side == BIDsell {
 
 			if v.Stop <= bestBid {
 
+				ob.stops[i].Status = COMPLETE
 				ob.bidAdd(v)
-				v.Status = COMPLETE
 
-				fmt.Printf("Triggered: %d\r\n", v.ID)
+				fmt.Printf("Triggered: %d (Side:%s)\r\n", v.ID, v.Side)
 			}
 		}
 
@@ -461,6 +459,42 @@ func (ob *OrderBook) getIndex(o Order) int {
 	}
 
 	return -1
+}
+
+func (ob *OrderBook) Debug() {
+	fmt.Println("FILLED-BOOK")
+
+	for i := 0; i < len(ob.fills); i++ {
+		f := ob.fills[i]
+		f.String()
+	}
+
+	fmt.Println("BUYS:")
+
+	if len(ob.asks) == 0 {
+		fmt.Println("empty")
+	}
+	for i := 0; i < len(ob.asks); i++ {
+		fmt.Printf("ID: %d, Amonth: %f (%f)\r\n", ob.asks[i].ID, ob.asks[i].Amount, ob.asks[i].Price)
+	}
+
+	fmt.Println("SELLS:")
+
+	if len(ob.bids) == 0 {
+		fmt.Println("empty")
+	}
+	for i := 0; i < len(ob.bids); i++ {
+		fmt.Printf("ID: %d, Amonth: %f (%f)\r\n", ob.bids[i].ID, ob.bids[i].Amount, ob.bids[i].Price)
+	}
+
+	fmt.Println("STOPS:")
+
+	if len(ob.stops) == 0 {
+		fmt.Println("empty")
+	}
+	for i := 0; i < len(ob.stops); i++ {
+		fmt.Printf("ID: %d, Stop: %f, Amonth: %f (%f)\r\n", ob.stops[i].ID, ob.stops[i].Stop, ob.stops[i].Amount, ob.stops[i].Price)
+	}
 }
 
 func NewOrderBook() *OrderBook {

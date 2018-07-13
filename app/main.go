@@ -23,9 +23,9 @@ func main() {
 	t := template.Must(template.ParseGlob("ui/*.html"))
 
 	r := gin.Default()
+	r.SetHTMLTemplate(t)
 
 	r.Static("/js", "./ui/js")
-	r.SetHTMLTemplate(t)
 
 	r.GET("/", Index)
 	r.POST("/add", AddOrder)

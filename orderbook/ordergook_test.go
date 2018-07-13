@@ -1,37 +1,10 @@
 package orderbook
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
 
-func printOrderBook(ob *OrderBook) {
-	fmt.Println("FILLED-BOOK")
-
-	for i := 0; i < len(ob.fills); i++ {
-		f := ob.fills[i]
-		f.String()
-	}
-
-	fmt.Println("BUYS:")
-
-	if len(ob.asks) == 0 {
-		fmt.Println("empty")
-	}
-	for i := 0; i < len(ob.asks); i++ {
-		fmt.Printf("ID: %d, Amonth: %f\r\n", ob.asks[i].ID, ob.asks[i].Amount)
-	}
-
-	fmt.Println("SELLS:")
-
-	if len(ob.bids) == 0 {
-		fmt.Println("empty")
-	}
-	for i := 0; i < len(ob.bids); i++ {
-		fmt.Printf("ID: %d, Amonth: %f\r\n", ob.bids[i].ID, ob.bids[i].Amount)
-	}
-}
 func TestSortingOrderBook(t *testing.T) {
 
 	ob := NewOrderBook()
@@ -51,7 +24,7 @@ func TestSortingOrderBook(t *testing.T) {
 	ob.AddOrder(Order{ID: 9, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6004.01, Time: time.Now()})  //+
 	ob.AddOrder(Order{ID: 10, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6004.01, Time: time.Now()}) //+
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestBuyMarket(t *testing.T) {
@@ -71,7 +44,7 @@ func TestBuyMarket(t *testing.T) {
 	//Easy koşulu her zaman Takerdır.
 	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: 30000, Easy: true, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestBuyLimitOrder(t *testing.T) {
@@ -94,7 +67,7 @@ func TestBuyLimitOrder(t *testing.T) {
 	//SELL
 	ob.AddOrder(Order{ID: 10, UserID: 203, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.10, Price: 30600, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestBuyLimitOrderPartial(t *testing.T) {
@@ -113,7 +86,7 @@ func TestBuyLimitOrderPartial(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: 30600, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestSellOrderSenaryoA(t *testing.T) {
@@ -136,7 +109,7 @@ func TestSellOrderSenaryoA(t *testing.T) {
 	//Orderbook'da istediği price olmadığı için mecvur bekleyecek. O nedenke maker olacak.
 	//ob.AddOrder(Order{ID: 7, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.70, Price: 30501, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 
 }
 
@@ -156,7 +129,7 @@ func TestSellOrderSenaryoB(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 7, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.50, Price: 30500, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestSellOrderSenaryoC(t *testing.T) {
@@ -175,7 +148,7 @@ func TestSellOrderSenaryoC(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 7, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "bid", Amount: 1.20, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 
 }
 
@@ -195,7 +168,7 @@ func TestSellOrderSenaryoD(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 7, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1, Price: 30550, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 
 }
 
@@ -220,7 +193,7 @@ func TestStopMarketSellSenaryoA(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 8, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: "bid", Amount: 1.1, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestStopMarketSellSenaryoB(t *testing.T) {
@@ -242,7 +215,7 @@ func TestStopMarketSellSenaryoB(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 8, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: "bid", Amount: 1.1, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestStopMarketBUY(t *testing.T) {
@@ -264,7 +237,7 @@ func TestStopMarketBUY(t *testing.T) {
 
 	ob.AddOrder(Order{ID: 8, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: 1.1, Price: 0, Time: time.Now()})
 
-	printOrderBook(ob)
+	ob.Debug()
 }
 
 func TestStoSellLimit(t *testing.T) {
@@ -275,20 +248,17 @@ func TestStoSellLimit(t *testing.T) {
 	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.1, Price: 30500, Time: time.Now()})
 	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.20, Price: 30300, Time: time.Now()})
 	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.80, Price: 30250, Time: time.Now()})
-	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.80, Price: 30250, Time: time.Now()})
+	ob.AddOrder(Order{ID: 4, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.80, Price: 30250, Time: time.Now()})
 
 	//SELL
-	ob.AddOrder(Order{ID: 4, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.90, Price: 30600, Time: time.Now()})
-	ob.AddOrder(Order{ID: 5, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.75, Price: 30610, Time: time.Now()})
-	ob.AddOrder(Order{ID: 6, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.20, Price: 31000, Time: time.Now()})
+	ob.AddOrder(Order{ID: 5, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.90, Price: 30600, Time: time.Now()})
+	ob.AddOrder(Order{ID: 6, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.75, Price: 30610, Time: time.Now()})
+	ob.AddOrder(Order{ID: 7, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.20, Price: 31000, Time: time.Now()})
 
-	//Alış STOP limit
-	ob.AddStop(Order{ID: 7, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Stop: 30610, Amount: 0.3, Price: 30650, Time: time.Now()})
-
-	//Satış Limit
-	ob.AddOrder(Order{ID: 8, UserID: 108, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.0, Price: 30620, Time: time.Now()})
-
-	printOrderBook(ob)
+	ob.AddStop(Order{ID: 8, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.3, Price: 30650, Stop: 30610, Time: time.Now()})
+	ob.Debug()
+	ob.AddOrder(Order{ID: 9, UserID: 108, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.0, Price: 30620, Time: time.Now()})
+	ob.Debug()
 }
 
 func BenchmarkMarket(b *testing.B) {

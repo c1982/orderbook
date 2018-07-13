@@ -294,12 +294,13 @@
 
                   <table class="ui very basic collapsing celled table" style="width:100%" id="asks-table">
                     <thead>
+                      <th>ID</th>
                       <th>Miktar (BTC)</th>
                       <th>Fiyat (TRY)</th>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="2">Henüz bir emir yok.</td>
+                            <td colspan="3">Henüz bir emir yok.</td>
                         </tr>
                     </tbody>
                   </table>
@@ -311,12 +312,13 @@
 
                     <table class="ui very basic collapsing celled table" style="width:100%" id="bids-table">
                         <thead>
+                          <th>ID</th>
                           <th>Fiyat (TRY)</th>
                           <th>Miktar (BTC)</th>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="2">Henüz bir emir yok.</td>
+                                <td colspan="3">Henüz bir emir yok.</td>
                               </tr>
                         </tbody>
                       </table>
@@ -387,35 +389,29 @@
     miktar = $('#piyasa-alis-try').val();
     miktarflo =  parseFloat(miktar);
 
-    sendOrder("ask","market", miktarflo, 0, true,0, false);
+    sendOrder("ask","market", miktarflo, "0", true,"0", false);
 
   });
 
   $('#piyasa-satis-emri').click(function (){
   
     miktar = $('#piyasa-satis-btc').val();
-    miktarflo =  parseFloat(miktar);
-
-    sendOrder("bid","market", miktarflo, 0, false, 0, false);
+    sendOrder("bid","market", miktar, "0", false, "0", false);
   
   });
 
   $('#limit-alis-emri').click(function (){  
     miktar = $('#limit-alis-miktar').val();
     fiyat = $('#limit-alis-fiyat').val();
-    miktarflo =  parseFloat(miktar);
-    fiyatflo =  parseFloat(fiyat);
 
-    sendOrder("ask","limit", miktarflo, fiyatflo, false, 0, false);
+    sendOrder("ask","limit", miktar, fiyat, false, "0", false);
   });
 
   $('#limit-satis-emri').click(function (){
     miktar = $('#limit-satis-miktar').val();
     fiyat = $('#limit-satis-fiyat').val();
-    miktarflo =  parseFloat(miktar);
-    fiyatflo =  parseFloat(fiyat);
 
-    sendOrder("bid","limit", miktarflo, fiyatflo, false,0, false);
+    sendOrder("bid","limit", miktar, fiyat, false, "0", false);
   });
 
   $('#limit-stop-alis-emri').click(function (){
@@ -424,11 +420,7 @@
     price = $('#limit-stop-alis-fiyat').val();
     miktar = $('#limit-stop-alis-miktar').val();
 
-    miktarflo =  parseFloat(miktar);
-    triggerflo =  parseFloat(trigger);
-    priceflo = parseFloat(price);
-
-    sendOrder("ask","limit", miktarflo, priceflo, false, triggerflo, true);
+    sendOrder("ask","limit", miktar, price, false, trigger, true);
 
   });
 
@@ -438,42 +430,29 @@
     price = $('#limit-stop-satis-fiyat').val();
     miktar = $('#limit-stop-satis-miktar').val();
 
-    miktarflo =  parseFloat(miktar);
-    triggerflo =  parseFloat(trigger);
-    priceflo = parseFloat(price);
-
-    sendOrder("bid","limit", miktarflo, priceflo, false, triggerflo, true);
+    sendOrder("bid","limit", miktar, price, false, trigger, true);
   });
 
   $('#piyasa-stop-alis-emri').click(function (){
     trigger = $('#piyasa-stop-alis-trigger').val();
     miktar = $('#piyasa-stop-alis-miktar').val();
 
-    miktarflo =  parseFloat(miktar);
-    triggerflo =  parseFloat(trigger);
-
-    sendOrder("ask","market", miktarflo, 0, true, triggerflo, true);
+    sendOrder("ask","market", miktar, "0", true, trigger, true);
   });
 
   $('#piyasa-stop-satis-emri').click(function (){
 
     trigger = $('#piyasa-stop-satis-trigger').val();
-    price = 0;
     miktar = $('#piyasa-stop-satis-miktar').val();
 
-    miktarflo =  parseFloat(miktar);
-    triggerflo =  parseFloat(trigger);
-    priceflo = parseFloat(price);
-
-    sendOrder("bid","market", miktarflo, priceflo, false, triggerflo, true);
+    sendOrder("bid","market", miktar, "0", false, trigger, true);
   });
 
-
   c.onmessage = function(msg) {
-  flush(msg);
+    flush(msg);
   };
 
-   function flush(msg){
+  function flush(msg){
       var now = new Date();
       asktbl = "";
       bidtbl = "";
@@ -484,6 +463,7 @@
 
       $.each(data.asks, function (k, v) {
         asktbl += "<tr>";
+          asktbl += "<td>" + v.id +"</td>";
           asktbl += "<td>" + v.amount +"</td>";
           asktbl += "<td>" + v.price +"</td>";
         asktbl += "</tr>";
@@ -491,6 +471,7 @@
 
       $.each(data.bids, function (k, v) {
         bidtbl += "<tr>";
+          bidtbl += "<td>" + v.id +"</td>";
           bidtbl += "<td>" + v.price +"</td>";
         bidtbl += "<td>" + v.amount +"</td>";
         bidtbl += "</tr>";
