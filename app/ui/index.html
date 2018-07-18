@@ -387,9 +387,8 @@
   $('#piyasa-alis-emri').click(function (){
   
     miktar = $('#piyasa-alis-try').val();
-    miktarflo =  parseFloat(miktar);
 
-    sendOrder("ask","market", miktarflo, "0", true,"0", false);
+    sendOrder("ask","market", miktar, "0", true,"0", false);
 
   });
 

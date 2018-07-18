@@ -3,30 +3,43 @@ package orderbook
 import (
 	"testing"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
+
+//Osijen
+//Eşcenc
+//Mayış
+//Bitgoing
+//Sikorta
+//Laylon
+//Eşki
+
+func NewAmount(value string) decimal.Decimal {
+	d, _ := decimal.NewFromString(value)
+	return d
+}
 
 func TestSortingOrderBook(t *testing.T) {
 
 	ob := NewOrderBook()
 
 	//BUY
-	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1, Price: 6000, Time: time.Now()})
-	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.90, Price: 6001, Time: time.Now()})
-	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.01, Price: 6000, Time: time.Now()})
-	ob.AddOrder(Order{ID: 4, UserID: 103, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.05, Price: 5999, Time: time.Now()})
-	ob.AddOrder(Order{ID: 8, UserID: 103, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.05, Price: 6001.1, Time: time.Now()})
+	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("1.0"), Price: NewAmount("6000"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("0.90"), Price: NewAmount("6001"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("1.01"), Price: NewAmount("6000"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 4, UserID: 103, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("1.05"), Price: NewAmount("5999"), Time: time.Now()})
 
 	//SELL
-	ob.AddOrder(Order{ID: 5, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1, Price: 6002, Time: time.Now()})
-	ob.AddOrder(Order{ID: 6, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 2, Price: 6003, Time: time.Now()})
-	ob.AddOrder(Order{ID: 8, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6002.1, Time: time.Now()})
-	ob.AddOrder(Order{ID: 7, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6004, Time: time.Now()})
-	ob.AddOrder(Order{ID: 9, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6004.01, Time: time.Now()})  //+
-	ob.AddOrder(Order{ID: 10, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 1.02, Price: 6004.01, Time: time.Now()}) //+
+	ob.AddOrder(Order{ID: 5, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("1"), Price: NewAmount("6002"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 6, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("2"), Price: NewAmount("6003"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 8, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("1.02"), Price: NewAmount("6002.1"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 7, UserID: 106, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("1.02"), Price: NewAmount("6004"), Time: time.Now()})
 
 	ob.Debug()
 }
 
+/*
 func TestBuyMarket(t *testing.T) {
 
 	ob := NewOrderBook()
@@ -271,3 +284,4 @@ func BenchmarkMarket(b *testing.B) {
 	}
 
 }
+*/

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"orderbook/orderbook"
-	"strconv"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -34,9 +35,9 @@ func AddOrder(c *gin.Context) {
 		return
 	}
 
-	amount, _ := strconv.ParseFloat(req.Amount, 64)
-	price, _ := strconv.ParseFloat(req.Price, 64)
-	trigger, _ := strconv.ParseFloat(req.Trigger, 64)
+	amount, _ := decimal.NewFromString(req.Amount)
+	price, _ := decimal.NewFromString(req.Price)
+	trigger, _ := decimal.NewFromString(req.Trigger)
 
 	o := orderbook.Order{}
 	o.ID = time.Now().Unix()
@@ -50,7 +51,12 @@ func AddOrder(c *gin.Context) {
 	o.Price = price
 	o.Stop = trigger
 
-	fmt.Printf("ID: %d, Side: %s, Type: %s, Amount: %f, Price: %f, Stop: %f\r\n", o.ID, o.Side, o.Type, o.Amount, o.Price, o.Stop)
+	fmt.Printf("ID: %d, Side: %s, Type: %s, Amount: %s, Price: %s, Stop: %s\r\n", o.ID,
+		o.Side,
+		o.Type,
+		o.Amount.String(),
+		o.Price.String(),
+		o.Stop.String())
 
 	if req.Stop {
 		ob.AddStop(o)
@@ -59,6 +65,9 @@ func AddOrder(c *gin.Context) {
 	}
 
 	export := ob.ToList()
+
+	fmt.Sprintln(string(export))
+
 	ob.Debug()
 
 	m.Broadcast(export)
