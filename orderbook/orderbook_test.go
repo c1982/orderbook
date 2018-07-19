@@ -15,6 +15,16 @@ import (
 //Laylon
 //Eşki
 
+func LoadTestData(ob *OrderBook) {
+	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("1.1"), Price: NewAmount("30500"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("0.20"), Price: NewAmount("30300"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: NewAmount("0.8"), Price: NewAmount("30250"), Time: time.Now()})
+
+	ob.AddOrder(Order{ID: 4, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("0.90"), Price: NewAmount("30600"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 5, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("0.75"), Price: NewAmount("30700"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 6, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: NewAmount("0.20"), Price: NewAmount("31000"), Time: time.Now()})
+}
+
 func NewAmount(value string) decimal.Decimal {
 	d, _ := decimal.NewFromString(value)
 	return d
@@ -39,27 +49,19 @@ func TestSortingOrderBook(t *testing.T) {
 	ob.Debug()
 }
 
-/*
 func TestBuyMarket(t *testing.T) {
 
 	ob := NewOrderBook()
 
-	//BUY
-	ob.AddOrder(Order{ID: 1, UserID: 100, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 1.1, Price: 30500, Time: time.Now()})
-	ob.AddOrder(Order{ID: 2, UserID: 101, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.20, Price: 30300, Time: time.Now()})
-	ob.AddOrder(Order{ID: 3, UserID: 102, Base: "BTC", Second: "TRY", Type: "limit", Side: "ask", Amount: 0.8, Price: 30250, Time: time.Now()})
+	LoadTestData(ob)
 
-	//SELL
-	ob.AddOrder(Order{ID: 4, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.90, Price: 30600, Time: time.Now()})
-	ob.AddOrder(Order{ID: 5, UserID: 105, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.75, Price: 30700, Time: time.Now()})
-	ob.AddOrder(Order{ID: 6, UserID: 107, Base: "BTC", Second: "TRY", Type: "limit", Side: "bid", Amount: 0.20, Price: 31000, Time: time.Now()})
-
-	//Easy koşulu her zaman Takerdır.
-	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: 30000, Easy: true, Price: 0, Time: time.Now()})
-
+	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: NewAmount("10000"), Easy: true, Price: NewAmount("0"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 10, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: NewAmount("10000"), Easy: true, Price: NewAmount("0"), Time: time.Now()})
+	ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: "ask", Amount: NewAmount("10000"), Easy: true, Price: NewAmount("0"), Time: time.Now()})
 	ob.Debug()
 }
 
+/*
 func TestBuyLimitOrder(t *testing.T) {
 
 	ob := NewOrderBook()

@@ -62,10 +62,6 @@ type Fill struct {
 	Taker    bool            `json:"taker"`
 }
 
-func (f *Fill) fee() {
-
-}
-
 func (f *Fill) String() {
 
 	var commFee = decimal.New(0, -10)
@@ -81,8 +77,8 @@ func (f *Fill) String() {
 	}
 
 	fmt.Printf("Price: %s, Amount: %s (Satıcı: %d, Alıcı: %d), Fee: %s (%s), Side Fee: %s Bid: %d, Ask: %d Taker: %v\r\n",
-		f.Price.String(),
-		f.Amount.String(),
+		f.Price.StringFixed(8),
+		f.Amount.StringFixed(8),
 		f.BidOrder.UserID,
 		f.AskOrder.UserID,
 		f.Fee.String(),
@@ -194,7 +190,7 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 
 				//order.Amount -= iter.SAmount
 				//order.Amount = order.Amount.Sub(order.Amount, iter.SAmount)
-				order.Amount = order.Amount.Sub(iter.Amount)
+				order.Amount = order.Amount.Sub(iter.SAmount)
 				ob.asks[orderIndex].Amount = order.Amount
 
 				ob.bids[i].Amount = decimal.New(0, -10)
@@ -205,15 +201,10 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 				//} else if order.Amount < iter.SAmount {
 			} else if order.Amount.Cmp(iter.SAmount) == -1 {
 
-				//ob.bids[i].Amount -= (order.Amount / iter.Price)
-				//sprice := order.Amount.Div(order.Amount, iter.Price)
 				sprice := order.Amount.Div(iter.Price)
-				//ob.bids[i].Amount = ob.bids[i].Amount.Sub(ob.bids[i].Amount, sprice)
 				ob.bids[i].Amount = ob.bids[i].Amount.Sub(sprice)
 				ob.AddFill(iter, order, iter.Price, sprice, true)
 
-				//order.Amount = 0
-				//order.Amount = big.NewInt(0)
 				order.Amount = ZeroNew
 				ob.asks[orderIndex].Amount = order.Amount
 			}
@@ -221,7 +212,7 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 			//if order.Amount.Cmp(big.NewInt(0)) == 0 {
 			if order.Amount.Cmp(ZeroNew) == 0 {
 				order.Status = COMPLETE
-				ob.asks[orderIndex].Status = order.Status
+				ob.asks[orderIndex].Status = COMPLETE
 				break
 			}
 		}
@@ -256,7 +247,7 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 			//if order.Amount == 0 {
 			if order.Amount.Cmp(ZeroNew) == 0 {
 				order.Status = COMPLETE
-				ob.asks[orderIndex].Status = order.Status
+				ob.asks[orderIndex].Status = COMPLETE
 				break
 			}
 		}
@@ -534,7 +525,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.asks); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.asks[i].ID, ob.asks[i].Amount.String(), ob.asks[i].Price.String())
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.asks[i].ID, ob.asks[i].Amount.StringFixed(8), ob.asks[i].Price.StringFixed(8))
 	}
 
 	fmt.Println("SELLS:")
@@ -543,7 +534,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.bids); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.bids[i].ID, ob.bids[i].Amount.String(), ob.bids[i].Price.String())
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.bids[i].ID, ob.bids[i].Amount.StringFixed(8), ob.bids[i].Price.StringFixed(8))
 	}
 
 	fmt.Println("STOPS:")
@@ -552,7 +543,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.stops); i++ {
-		fmt.Printf("ID: %d, Stop: %s, Amonth: %s (%s)\r\n", ob.stops[i].ID, ob.stops[i].Stop.String(), ob.stops[i].Amount.String(), ob.stops[i].Price.String())
+		fmt.Printf("ID: %d, Stop: %s, Amonth: %s (%s)\r\n", ob.stops[i].ID, ob.stops[i].Stop.StringFixed(8), ob.stops[i].Amount.StringFixed(8), ob.stops[i].Price.StringFixed(8))
 	}
 }
 
