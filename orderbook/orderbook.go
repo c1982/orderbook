@@ -193,10 +193,15 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 
 				//order.Amount -= iter.SAmount
 				//order.Amount = order.Amount.Sub(order.Amount, iter.SAmount)
+
 				order.Amount = order.Amount.Sub(iter.SAmount)
+
+				//order.Amount = iter.SAmount.Sub(order.Amount)
+				//fmt.Println("Amount:" + order.Amount.String())
+
 				ob.buys[orderIndex].Amount = order.Amount
 
-				ob.sells[i].Amount = decimal.New(0, -10)
+				ob.sells[i].Amount = ZeroNew
 				ob.sells[i].Status = COMPLETE
 
 				ob.AddFill(iter, order, iter.Price, iter.Amount, true)
@@ -205,7 +210,10 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 			} else if order.Amount.Cmp(iter.SAmount) == -1 {
 
 				sprice := order.Amount.Div(iter.Price)
-				ob.sells[i].Amount = ob.sells[i].Amount.Sub(sprice)
+				ob.sells[i].Amount = sprice.Sub(ob.sells[i].Amount)
+
+				fmt.Println("Amount:" + sprice.String())
+
 				ob.AddFill(iter, order, iter.Price, sprice, true)
 
 				order.Amount = ZeroNew

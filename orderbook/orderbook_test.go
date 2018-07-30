@@ -16,6 +16,7 @@ import (
 //Eşki
 //Enşe
 //kantır sıkrayt
+//Gogıl
 
 func LoadTestData(ob *OrderBook) {
 
@@ -54,15 +55,17 @@ func TestSortingOrderBook(t *testing.T) {
 	ob.Debug()
 }
 
-func Test_Market_Buy(t *testing.T) {
+func Test_Market_Buy_Easy(t *testing.T) {
 
 	ob := NewOrderBook()
 
 	LoadTestData(ob)
 
 	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
-
+	ob.AddOrder(Order{ID: 10, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
+	//ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
 	ob.Debug()
+
 }
 
 func Test_Market_Buy_Partial(t *testing.T) {
