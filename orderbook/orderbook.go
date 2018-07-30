@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -19,13 +20,13 @@ const (
 	STOPMARKET = "stop_market"
 	STOPLIMIT  = "stop_limit"
 
-	ASKbuy  = "ask"
-	BIDsell = "bid"
+	BUY  = "buy"
+	SELL = "sell"
 )
 
-var MakerCommFee = decimal.New(1, -10)
-var TakerCommFee = decimal.New(2, -10)
-var ZeroNew = decimal.New(0, -10)
+var MakerCommFee = decimal.New(1, -8)
+var TakerCommFee = decimal.New(2, -8)
+var ZeroNew = decimal.New(0, -8)
 
 type Order struct {
 	ID      int64           `json:"id"`
@@ -44,8 +45,8 @@ type Order struct {
 }
 
 type OrderBook struct {
-	bids  BidList
-	asks  AskList
+	sells SellList
+	buys  BuyList
 	stops StopList
 	fills FillList
 }
@@ -81,9 +82,9 @@ func (f *Fill) String() {
 		f.Amount.StringFixed(8),
 		f.BidOrder.UserID,
 		f.AskOrder.UserID,
-		f.Fee.String(),
-		commFee.String(),
-		f.SideFee.String(),
+		f.Fee.StringFixed(8),
+		commFee.StringFixed(8),
+		f.SideFee.StringFixed(8),
 		f.BidOrder.ID,
 		f.AskOrder.ID,
 		f.Taker)
@@ -91,26 +92,26 @@ func (f *Fill) String() {
 
 type FillList []Fill
 
-type AskList []Order
+type BuyList []Order
 
 type StopList []Order
 
-//BidList Bid price yüksekten düşüğe doğru sıralanacak.
-type BidList []Order
+//SellList Bid price yüksekten düşüğe doğru sıralanacak.
+type SellList []Order
 
-func (b BidList) Len() int      { return len(b) }
-func (b BidList) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b SellList) Len() int      { return len(b) }
+func (b SellList) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
 
-//func (b BidList) Less(i, j int) bool { return b[i].Price < b[j].Price }
-func (b BidList) Less(i, j int) bool { return b[i].Price.Cmp(b[j].Price) == -1 }
+//func (b SellList) Less(i, j int) bool { return b[i].Price < b[j].Price }
+func (b SellList) Less(i, j int) bool { return b[i].Price.Cmp(b[j].Price) == -1 }
 
-//AskList Ask price düşükten yükseğe doğru sıralanacak.
+//BuyList Ask price düşükten yükseğe doğru sıralanacak.
 
-func (a AskList) Len() int      { return len(a) }
-func (a AskList) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a BuyList) Len() int      { return len(a) }
+func (a BuyList) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
-//func (a AskList) Less(i, j int) bool { return a[i].Price > a[j].Price }
-func (a AskList) Less(i, j int) bool { return a[i].Price.Cmp(a[j].Price) == 1 }
+//func (a BuyList) Less(i, j int) bool { return a[i].Price > a[j].Price }
+func (a BuyList) Less(i, j int) bool { return a[i].Price.Cmp(a[j].Price) == 1 }
 
 //Filed book sıralaması tarihe göre yapılır.
 func (f FillList) Len() int           { return len(f) }
@@ -119,31 +120,33 @@ func (f FillList) Less(i, j int) bool { return f[i].Time.After(f[j].Time) }
 
 func (ob *OrderBook) AddOrder(order Order) {
 
+	order.Side = strings.ToLower(order.Side)
+
 	//order.SAmount = order.Price * order.Amount
 	order.SAmount = decimal.New(0, -10)
 	//order.SAmount = order.SAmount.Mul(order.Price, order.Amount)
 	order.SAmount = order.Price.Mul(order.Amount)
 
-	if order.Side == BIDsell {
-		ob.bidAdd(order)
-	} else if order.Side == ASKbuy {
-		ob.askAdd(order)
+	if order.Side == SELL {
+		ob.sellAdd(order)
+	} else if order.Side == BUY {
+		ob.buyAdd(order)
 	}
 
 	ob.fire()
 }
 
-func (ob *OrderBook) askAdd(order Order) {
+func (ob *OrderBook) buyAdd(order Order) {
 
-	ob.asks = append(ob.asks, order)
-	sort.Sort(ob.asks)
+	ob.buys = append(ob.buys, order)
+	sort.Sort(ob.buys)
 	ob.execute(order)
 }
 
-func (ob *OrderBook) bidAdd(order Order) {
+func (ob *OrderBook) sellAdd(order Order) {
 
-	ob.bids = append(ob.bids, order)
-	sort.Sort(ob.bids)
+	ob.sells = append(ob.sells, order)
+	sort.Sort(ob.sells)
 	ob.execute(order)
 }
 
@@ -161,12 +164,12 @@ func (ob *OrderBook) AddFill(bid, ask Order, price, amonth decimal.Decimal, take
 func (ob *OrderBook) ToList() []byte {
 
 	export := struct {
-		Bids  BidList  `json:"bids"`
-		Asks  AskList  `json:"asks"`
+		Sells SellList `json:"sells"`
+		Buys  BuyList  `json:"buys"`
 		Fills FillList `json:"fills"`
 	}{
-		Bids:  ob.bids,
-		Asks:  ob.asks,
+		Sells: ob.sells,
+		Buys:  ob.buys,
 		Fills: ob.fills,
 	}
 
@@ -183,7 +186,7 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 
 	if order.Easy {
 
-		for i, iter := range ob.bids {
+		for i, iter := range ob.sells {
 
 			//if order.Amount >= iter.SAmount {
 			if order.Amount.Cmp(iter.SAmount) == 1 || order.Amount.Cmp(iter.SAmount) == 0 {
@@ -191,10 +194,10 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 				//order.Amount -= iter.SAmount
 				//order.Amount = order.Amount.Sub(order.Amount, iter.SAmount)
 				order.Amount = order.Amount.Sub(iter.SAmount)
-				ob.asks[orderIndex].Amount = order.Amount
+				ob.buys[orderIndex].Amount = order.Amount
 
-				ob.bids[i].Amount = decimal.New(0, -10)
-				ob.bids[i].Status = COMPLETE
+				ob.sells[i].Amount = decimal.New(0, -10)
+				ob.sells[i].Status = COMPLETE
 
 				ob.AddFill(iter, order, iter.Price, iter.Amount, true)
 
@@ -202,24 +205,24 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 			} else if order.Amount.Cmp(iter.SAmount) == -1 {
 
 				sprice := order.Amount.Div(iter.Price)
-				ob.bids[i].Amount = ob.bids[i].Amount.Sub(sprice)
+				ob.sells[i].Amount = ob.sells[i].Amount.Sub(sprice)
 				ob.AddFill(iter, order, iter.Price, sprice, true)
 
 				order.Amount = ZeroNew
-				ob.asks[orderIndex].Amount = order.Amount
+				ob.buys[orderIndex].Amount = order.Amount
 			}
 
 			//if order.Amount.Cmp(big.NewInt(0)) == 0 {
 			if order.Amount.Cmp(ZeroNew) == 0 {
 				order.Status = COMPLETE
-				ob.asks[orderIndex].Status = COMPLETE
+				ob.buys[orderIndex].Status = COMPLETE
 				break
 			}
 		}
 
 	} else {
 
-		for i, iter := range ob.bids {
+		for i, iter := range ob.sells {
 
 			//if order.Amount >= iter.Amount {
 			if order.Amount.Cmp(iter.Amount) == 1 || order.Amount.Cmp(iter.Amount) == 0 {
@@ -227,27 +230,27 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 				//order.Amount -= iter.Amount
 				//order.Amount = order.Amount.Sub(order.Amount, iter.Amount)
 				order.Amount = order.Amount.Sub(iter.Amount)
-				ob.asks[orderIndex].Amount = order.Amount
-				//ob.bids[i].Amount = 0
-				ob.bids[i].Amount = ZeroNew
-				ob.bids[i].Status = COMPLETE
+				ob.buys[orderIndex].Amount = order.Amount
+				//ob.sells[i].Amount = 0
+				ob.sells[i].Amount = ZeroNew
+				ob.sells[i].Status = COMPLETE
 				ob.AddFill(iter, order, iter.Price, iter.Amount, true)
 
 				//} else if order.Amount < iter.Amount {
 			} else if order.Amount.Cmp(iter.Amount) == -1 {
 
-				//ob.bids[i].Amount -= order.Amount
-				//ob.bids[i].Amount = ob.bids[i].Amount.Sub(ob.bids[i].Amount, order.Amount)
-				ob.bids[i].Amount = ob.bids[i].Amount.Sub(order.Amount)
+				//ob.sells[i].Amount -= order.Amount
+				//ob.sells[i].Amount = ob.sells[i].Amount.Sub(ob.sells[i].Amount, order.Amount)
+				ob.sells[i].Amount = ob.sells[i].Amount.Sub(order.Amount)
 				ob.AddFill(iter, order, iter.Price, order.Amount, true)
 				order.Amount = ZeroNew
-				ob.asks[orderIndex].Amount = order.Amount
+				ob.buys[orderIndex].Amount = order.Amount
 			}
 
 			//if order.Amount == 0 {
 			if order.Amount.Cmp(ZeroNew) == 0 {
 				order.Status = COMPLETE
-				ob.asks[orderIndex].Status = COMPLETE
+				ob.buys[orderIndex].Status = COMPLETE
 				break
 			}
 		}
@@ -257,7 +260,7 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 
 func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 
-	for i, iter := range ob.asks {
+	for i, iter := range ob.buys {
 
 		//if order.Amount >= iter.Amount {
 		if order.Amount.Cmp(iter.Amount) == 1 || order.Amount.Cmp(iter.Amount) == 0 {
@@ -266,9 +269,9 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 			//order.Amount = order.Amount.Sub(order.Amount, iter.Amount)
 			order.Amount = order.Amount.Sub(iter.Amount)
 
-			ob.bids[orderIndex].Amount = order.Amount
-			ob.asks[i].Amount = ZeroNew
-			ob.asks[i].Status = COMPLETE
+			ob.sells[orderIndex].Amount = order.Amount
+			ob.buys[i].Amount = ZeroNew
+			ob.buys[i].Status = COMPLETE
 
 			//taker := (order.Price <= iter.Price)
 			taker := (order.Price.Cmp(iter.Price) == -1) || (order.Price.Cmp(iter.Price) == 0)
@@ -277,9 +280,9 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 			//} else if order.Amount < iter.Amount {
 		} else if order.Amount.Cmp(iter.Amount) == -1 {
 
-			//ob.asks[i].Amount -= order.Amount
-			//ob.asks[i].Amount = ob.asks[i].Amount.Sub(ob.asks[i].Amount, order.Amount)
-			ob.asks[i].Amount = ob.asks[i].Amount.Sub(order.Amount)
+			//ob.buys[i].Amount -= order.Amount
+			//ob.buys[i].Amount = ob.buys[i].Amount.Sub(ob.buys[i].Amount, order.Amount)
+			ob.buys[i].Amount = ob.buys[i].Amount.Sub(order.Amount)
 
 			//taker := (order.Price <= iter.Price)
 			taker := (order.Price.Cmp(iter.Price) == -1) || (order.Price.Cmp(iter.Price) == 0)
@@ -287,13 +290,13 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 			ob.AddFill(order, iter, iter.Price, order.Amount, taker)
 
 			order.Amount = ZeroNew
-			ob.bids[orderIndex].Amount = order.Amount
+			ob.sells[orderIndex].Amount = order.Amount
 		}
 
 		//if order.Amount == 0 {
 		if order.Amount.Cmp(ZeroNew) == 0 {
 			order.Status = COMPLETE
-			ob.bids[orderIndex].Status = order.Status
+			ob.sells[orderIndex].Status = order.Status
 			break
 		}
 	}
@@ -301,7 +304,7 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 }
 
 func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
-	for i, iter := range ob.bids {
+	for i, iter := range ob.sells {
 
 		//if iter.Price > order.Price {
 		if iter.Price.Cmp(order.Price) == 1 {
@@ -314,10 +317,10 @@ func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
 			//order.Amount -= iter.Amount
 			order.Amount = order.Amount.Sub(iter.Amount)
 
-			ob.asks[orderIndex].Amount = order.Amount
+			ob.buys[orderIndex].Amount = order.Amount
 
-			ob.bids[i].Amount = ZeroNew
-			ob.bids[i].Status = COMPLETE
+			ob.sells[i].Amount = ZeroNew
+			ob.sells[i].Status = COMPLETE
 
 			//taker := (order.Price <= iter.Price)
 			taker := (order.Price.Cmp(iter.Price) == -1) || (order.Price.Cmp(iter.Price) == 0)
@@ -326,22 +329,22 @@ func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
 			//} else if order.Amount < iter.Amount {
 		} else if order.Amount.Cmp(iter.Amount) == -1 {
 
-			//ob.bids[i].Amount -= order.Amount
-			//ob.bids[i].Amount = ob.bids[i].Amount.Sub(ob.bids[i].Amount, order.Amount)
-			ob.bids[i].Amount = ob.bids[i].Amount.Sub(order.Amount)
+			//ob.sells[i].Amount -= order.Amount
+			//ob.sells[i].Amount = ob.sells[i].Amount.Sub(ob.sells[i].Amount, order.Amount)
+			ob.sells[i].Amount = ob.sells[i].Amount.Sub(order.Amount)
 
 			//taker := (order.Price <= iter.Price)
 			taker := (order.Price.Cmp(iter.Price) == -1) || (order.Price.Cmp(iter.Price) == 0)
 			ob.AddFill(iter, order, iter.Price, order.Amount, taker)
 
 			order.Amount = ZeroNew
-			ob.asks[orderIndex].Amount = order.Amount
+			ob.buys[orderIndex].Amount = order.Amount
 		}
 
 		//if order.Amount == 0 {
 		if order.Amount.Cmp(ZeroNew) == 0 {
 			order.Status = COMPLETE
-			ob.asks[orderIndex].Status = order.Status
+			ob.buys[orderIndex].Status = order.Status
 
 			break
 		}
@@ -349,7 +352,7 @@ func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
 }
 
 func (ob *OrderBook) executeLimitBid(order Order, orderIndex int) {
-	for i, iter := range ob.asks {
+	for i, iter := range ob.buys {
 
 		//if iter.Price < order.Price {
 		if iter.Price.Cmp(order.Price) == -1 {
@@ -362,27 +365,27 @@ func (ob *OrderBook) executeLimitBid(order Order, orderIndex int) {
 			//order.Amount -= iter.Amount
 			order.Amount = order.Amount.Sub(iter.Amount)
 
-			ob.bids[orderIndex].Amount = order.Amount
-			ob.asks[i].Amount = ZeroNew
-			ob.asks[i].Status = COMPLETE
+			ob.sells[orderIndex].Amount = order.Amount
+			ob.buys[i].Amount = ZeroNew
+			ob.buys[i].Status = COMPLETE
 
 			ob.AddFill(order, iter, iter.Price, iter.Amount, false)
 
 			//} else if order.Amount < iter.Amount {
 		} else if order.Amount.Cmp(iter.Amount) == -1 {
 
-			//ob.asks[i].Amount -= order.Amount
-			ob.asks[i].Amount = ob.asks[i].Amount.Sub(order.Amount)
+			//ob.buys[i].Amount -= order.Amount
+			ob.buys[i].Amount = ob.buys[i].Amount.Sub(order.Amount)
 
 			ob.AddFill(order, iter, iter.Price, order.Amount, true)
 			order.Amount = ZeroNew
-			ob.bids[orderIndex].Amount = order.Amount
+			ob.sells[orderIndex].Amount = order.Amount
 		}
 
 		//if order.Amount == 0 {
 		if order.Amount.Cmp(ZeroNew) == 0 {
 			order.Status = COMPLETE
-			ob.bids[orderIndex].Status = order.Status
+			ob.sells[orderIndex].Status = order.Status
 
 			break
 		}
@@ -395,12 +398,12 @@ func (ob *OrderBook) execute(order Order) {
 
 	logic := map[string]map[string]func(){
 		MARKET: map[string]func(){
-			ASKbuy:  func() { ob.executeMarketAsk(order, orderIndex) },
-			BIDsell: func() { ob.executeMarketBid(order, orderIndex) },
+			BUY:  func() { ob.executeMarketAsk(order, orderIndex) },
+			SELL: func() { ob.executeMarketBid(order, orderIndex) },
 		},
 		LIMIT: map[string]func(){
-			ASKbuy:  func() { ob.executeLimitAsk(order, orderIndex) },
-			BIDsell: func() { ob.executeLimitBid(order, orderIndex) },
+			BUY:  func() { ob.executeLimitAsk(order, orderIndex) },
+			SELL: func() { ob.executeLimitBid(order, orderIndex) },
 		},
 	}
 
@@ -414,35 +417,36 @@ func (ob *OrderBook) fire() {
 	var bestAsk decimal.Decimal
 	var bestBid decimal.Decimal
 
-	if len(ob.asks) > 0 {
-		bestAsk = ob.asks[0].Price
+	if len(ob.buys) > 0 {
+		bestAsk = ob.buys[0].Price
 	}
 
-	if len(ob.bids) > 0 {
-		bestBid = ob.bids[0].Price
+	if len(ob.sells) > 0 {
+		bestBid = ob.sells[0].Price
 	}
 
 	for i := 0; i < len(ob.stops); i++ {
 		v := ob.stops[i]
 
 		//TODO: Eşitlik?
-		if v.Side == ASKbuy {
+		if v.Side == BUY {
 
 			//if v.Stop >= bestAsk {
 			if v.Stop.Cmp(bestAsk) == 1 || v.Stop.Cmp(bestAsk) == 0 {
 
 				ob.stops[i].Status = COMPLETE
-				ob.askAdd(v)
+				ob.buyAdd(v)
+
 				fmt.Printf("Triggered: %d (Side:%s)\r\n", v.ID, v.Side)
 			}
 
-		} else if v.Side == BIDsell {
+		} else if v.Side == SELL {
 
 			//if v.Stop <= bestBid {
 			if v.Stop.Cmp(bestBid) == -1 || v.Stop.Cmp(bestBid) == 0 {
 
 				ob.stops[i].Status = COMPLETE
-				ob.bidAdd(v)
+				ob.sellAdd(v)
 
 				fmt.Printf("Triggered: %d (Side:%s)\r\n", v.ID, v.Side)
 			}
@@ -454,26 +458,26 @@ func (ob *OrderBook) fire() {
 func (ob *OrderBook) cleanComplete() {
 
 	//SELL
-	for i := 0; i < len(ob.bids); i++ {
-		v := ob.bids[i]
+	for i := 0; i < len(ob.sells); i++ {
+		v := ob.sells[i]
 
 		if v.Status != COMPLETE {
 			continue
 		}
 
-		ob.bids = append(ob.bids[:i], ob.bids[i+1:]...)
+		ob.sells = append(ob.sells[:i], ob.sells[i+1:]...)
 		i--
 	}
 
 	//ASK
-	for i := 0; i < len(ob.asks); i++ {
-		v := ob.asks[i]
+	for i := 0; i < len(ob.buys); i++ {
+		v := ob.buys[i]
 
 		if v.Status != COMPLETE {
 			continue
 		}
 
-		ob.asks = append(ob.asks[:i], ob.asks[i+1:]...)
+		ob.buys = append(ob.buys[:i], ob.buys[i+1:]...)
 		i--
 	}
 
@@ -492,17 +496,17 @@ func (ob *OrderBook) cleanComplete() {
 
 func (ob *OrderBook) getIndex(o Order) int {
 
-	if o.Side == ASKbuy {
-		for i := 0; i < len(ob.asks); i++ {
-			if o.ID == ob.asks[i].ID {
+	if o.Side == BUY {
+		for i := 0; i < len(ob.buys); i++ {
+			if o.ID == ob.buys[i].ID {
 				return i
 			}
 		}
 	}
 
-	if o.Side == BIDsell {
-		for i := 0; i < len(ob.bids); i++ {
-			if o.ID == ob.bids[i].ID {
+	if o.Side == SELL {
+		for i := 0; i < len(ob.sells); i++ {
+			if o.ID == ob.sells[i].ID {
 				return i
 			}
 		}
@@ -521,20 +525,20 @@ func (ob *OrderBook) Debug() {
 
 	fmt.Println("BUYS:")
 
-	if len(ob.asks) == 0 {
+	if len(ob.buys) == 0 {
 		fmt.Println("empty")
 	}
-	for i := 0; i < len(ob.asks); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.asks[i].ID, ob.asks[i].Amount.StringFixed(8), ob.asks[i].Price.StringFixed(8))
+	for i := 0; i < len(ob.buys); i++ {
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.buys[i].ID, ob.buys[i].Amount.StringFixed(8), ob.buys[i].Price.StringFixed(8))
 	}
 
 	fmt.Println("SELLS:")
 
-	if len(ob.bids) == 0 {
+	if len(ob.sells) == 0 {
 		fmt.Println("empty")
 	}
-	for i := 0; i < len(ob.bids); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.bids[i].ID, ob.bids[i].Amount.StringFixed(8), ob.bids[i].Price.StringFixed(8))
+	for i := 0; i < len(ob.sells); i++ {
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.sells[i].ID, ob.sells[i].Amount.StringFixed(8), ob.sells[i].Price.StringFixed(8))
 	}
 
 	fmt.Println("STOPS:")
@@ -550,8 +554,8 @@ func (ob *OrderBook) Debug() {
 func NewOrderBook() *OrderBook {
 
 	return &OrderBook{
-		bids:  []Order{},
-		asks:  []Order{},
+		sells: []Order{},
+		buys:  []Order{},
 		stops: []Order{},
 		fills: []Fill{},
 	}

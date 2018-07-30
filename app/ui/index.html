@@ -292,7 +292,7 @@
               
               <h4>ALIŞLAR</h4>
 
-                  <table class="ui very basic collapsing celled table" style="width:100%" id="asks-table">
+                  <table class="ui very basic collapsing celled table" style="width:100%" id="buys-table">
                     <thead>
                       <th>ID</th>
                       <th>Miktar (BTC)</th>
@@ -310,7 +310,7 @@
 
                     <h4>SATIŞLAR</h4>
 
-                    <table class="ui very basic collapsing celled table" style="width:100%" id="bids-table">
+                    <table class="ui very basic collapsing celled table" style="width:100%" id="sells-table">
                         <thead>
                           <th>ID</th>
                           <th>Fiyat (TRY)</th>
@@ -388,14 +388,14 @@
   
     miktar = $('#piyasa-alis-try').val();
 
-    sendOrder("ask","market", miktar, "0", true,"0", false);
+    sendOrder("BUY","market", miktar, "0", true,"0", false);
 
   });
 
   $('#piyasa-satis-emri').click(function (){
   
     miktar = $('#piyasa-satis-btc').val();
-    sendOrder("bid","market", miktar, "0", false, "0", false);
+    sendOrder("SELL","market", miktar, "0", false, "0", false);
   
   });
 
@@ -403,14 +403,14 @@
     miktar = $('#limit-alis-miktar').val();
     fiyat = $('#limit-alis-fiyat').val();
 
-    sendOrder("ask","limit", miktar, fiyat, false, "0", false);
+    sendOrder("BUY","limit", miktar, fiyat, false, "0", false);
   });
 
   $('#limit-satis-emri').click(function (){
     miktar = $('#limit-satis-miktar').val();
     fiyat = $('#limit-satis-fiyat').val();
 
-    sendOrder("bid","limit", miktar, fiyat, false, "0", false);
+    sendOrder("SELL","limit", miktar, fiyat, false, "0", false);
   });
 
   $('#limit-stop-alis-emri').click(function (){
@@ -419,7 +419,7 @@
     price = $('#limit-stop-alis-fiyat').val();
     miktar = $('#limit-stop-alis-miktar').val();
 
-    sendOrder("ask","limit", miktar, price, false, trigger, true);
+    sendOrder("BUY","limit", miktar, price, false, trigger, true);
 
   });
 
@@ -429,14 +429,14 @@
     price = $('#limit-stop-satis-fiyat').val();
     miktar = $('#limit-stop-satis-miktar').val();
 
-    sendOrder("bid","limit", miktar, price, false, trigger, true);
+    sendOrder("SELL","limit", miktar, price, false, trigger, true);
   });
 
   $('#piyasa-stop-alis-emri').click(function (){
     trigger = $('#piyasa-stop-alis-trigger').val();
     miktar = $('#piyasa-stop-alis-miktar').val();
 
-    sendOrder("ask","market", miktar, "0", true, trigger, true);
+    sendOrder("BUY","market", miktar, "0", true, trigger, true);
   });
 
   $('#piyasa-stop-satis-emri').click(function (){
@@ -444,7 +444,7 @@
     trigger = $('#piyasa-stop-satis-trigger').val();
     miktar = $('#piyasa-stop-satis-miktar').val();
 
-    sendOrder("bid","market", miktar, "0", false, trigger, true);
+    sendOrder("SELL","market", miktar, "0", false, trigger, true);
   });
 
   c.onmessage = function(msg) {
@@ -460,7 +460,7 @@
       console.debug(msg.data);
       data = JSON.parse(msg.data);
 
-      $.each(data.asks, function (k, v) {
+      $.each(data.buys, function (k, v) {
         asktbl += "<tr>";
           asktbl += "<td>" + v.id +"</td>";
           asktbl += "<td>" + v.amount +"</td>";
@@ -468,7 +468,7 @@
         asktbl += "</tr>";
       });
 
-      $.each(data.bids, function (k, v) {
+      $.each(data.sells, function (k, v) {
         bidtbl += "<tr>";
           bidtbl += "<td>" + v.id +"</td>";
           bidtbl += "<td>" + v.price +"</td>";
@@ -489,11 +489,11 @@
       });
 
       if (asktbl != ""){
-        $("#asks-table > tbody").html(asktbl);
+        $("#buys-table > tbody").html(asktbl);
       }
 
       if (bidtbl != ""){
-        $("#bids-table > tbody").html(bidtbl);
+        $("#sells-table > tbody").html(bidtbl);
       }
 
       if(filltbl != ""){
