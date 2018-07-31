@@ -1,6 +1,7 @@
 package orderbook
 
 import (
+	"log"
 	"testing"
 	"time"
 
@@ -62,10 +63,11 @@ func Test_Market_Buy_Easy(t *testing.T) {
 	LoadTestData(ob)
 
 	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
-	ob.AddOrder(Order{ID: 10, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
-	//ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
 	ob.Debug()
-
+	ob.AddOrder(Order{ID: 10, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
+	ob.Debug()
+	ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
+	ob.Debug()
 }
 
 func Test_Market_Buy_Partial(t *testing.T) {
@@ -165,6 +167,26 @@ func Test_Stop_Limit_Buy(t *testing.T) {
 	ob.Debug()
 	ob.AddOrder(Order{ID: 8, UserID: 108, Base: "BTC", Second: "TRY", Type: "limit", Side: BUY, Amount: A("1.0"), Price: A("30620"), Time: time.Now()})
 	ob.Debug()
+}
+
+func Test_CompareOrderAmount(t *testing.T) {
+
+	o := Order{ID: 1, UserID: 1, Base: "BTC", Second: "TRY", Type: "market", Side: "BUY", Amount: A("10000"), Price: A("30600"), Time: time.Now()}
+	o.SAmount = o.Price.Mul(o.Amount)
+
+	iter := Order{ID: 2, UserID: 2, Base: "BTC", Second: "TRY", Type: "market", Side: "SELL", Amount: A("0.9"), Price: A("30600"), Time: time.Now()}
+	iter.SAmount = iter.Price.Mul(iter.Amount)
+
+	log.Printf("o.Amount: %s", o.Amount.StringFixed(3))
+	log.Printf("iter.SAmount: %s", iter.SAmount.StringFixed(3))
+
+	if o.Amount.Cmp(iter.SAmount) == 1 || o.Amount.Cmp(iter.SAmount) == 0 {
+		log.Println(">> OK > and =")
+	}
+
+	amount := o.Amount.Sub(iter.SAmount)
+
+	log.Printf("Sub: %s", amount.StringFixed(3))
 }
 
 func BenchmarkMarket(b *testing.B) {

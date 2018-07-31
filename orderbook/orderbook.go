@@ -24,9 +24,9 @@ const (
 	SELL = "sell"
 )
 
-var MakerCommFee = decimal.New(1, -8)
-var TakerCommFee = decimal.New(2, -8)
-var ZeroNew = decimal.New(0, -8)
+var MakerCommFee = decimal.New(1, -4)
+var TakerCommFee = decimal.New(2, -4)
+var ZeroNew = decimal.New(0, -2)
 
 type Order struct {
 	ID      int64           `json:"id"`
@@ -78,13 +78,13 @@ func (f *Fill) String() {
 	}
 
 	fmt.Printf("Price: %s, Amount: %s (Satıcı: %d, Alıcı: %d), Fee: %s (%s), Side Fee: %s Bid: %d, Ask: %d Taker: %v\r\n",
-		f.Price.StringFixed(8),
-		f.Amount.StringFixed(8),
+		f.Price.StringFixed(3),
+		f.Amount.StringFixed(3),
 		f.BidOrder.UserID,
 		f.AskOrder.UserID,
-		f.Fee.StringFixed(8),
-		commFee.StringFixed(8),
-		f.SideFee.StringFixed(8),
+		f.Fee.StringFixed(4),
+		commFee.StringFixed(4),
+		f.SideFee.StringFixed(4),
 		f.BidOrder.ID,
 		f.AskOrder.ID,
 		f.Taker)
@@ -123,8 +123,7 @@ func (ob *OrderBook) AddOrder(order Order) {
 	order.Side = strings.ToLower(order.Side)
 
 	//order.SAmount = order.Price * order.Amount
-	order.SAmount = decimal.New(0, -10)
-	//order.SAmount = order.SAmount.Mul(order.Price, order.Amount)
+	order.SAmount = ZeroNew
 	order.SAmount = order.Price.Mul(order.Amount)
 
 	if order.Side == SELL {
@@ -182,22 +181,16 @@ func (ob *OrderBook) ToList() []byte {
 	return data
 }
 
-func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
+func (ob *OrderBook) executeMarketBuy(order Order, orderIndex int) {
 
 	if order.Easy {
 
 		for i, iter := range ob.sells {
 
-			//if order.Amount >= iter.SAmount {
+			//order.Amount >= iter.SAmount
 			if order.Amount.Cmp(iter.SAmount) == 1 || order.Amount.Cmp(iter.SAmount) == 0 {
 
-				//order.Amount -= iter.SAmount
-				//order.Amount = order.Amount.Sub(order.Amount, iter.SAmount)
-
 				order.Amount = order.Amount.Sub(iter.SAmount)
-
-				//order.Amount = iter.SAmount.Sub(order.Amount)
-				//fmt.Println("Amount:" + order.Amount.String())
 
 				ob.buys[orderIndex].Amount = order.Amount
 
@@ -210,9 +203,8 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 			} else if order.Amount.Cmp(iter.SAmount) == -1 {
 
 				sprice := order.Amount.Div(iter.Price)
-				ob.sells[i].Amount = sprice.Sub(ob.sells[i].Amount)
-
-				fmt.Println("Amount:" + sprice.String())
+				ob.sells[i].Amount = ob.sells[i].Amount.Sub(sprice)
+				ob.sells[i].SAmount = ob.sells[i].SAmount.Sub(order.Amount)
 
 				ob.AddFill(iter, order, iter.Price, sprice, true)
 
@@ -220,7 +212,6 @@ func (ob *OrderBook) executeMarketAsk(order Order, orderIndex int) {
 				ob.buys[orderIndex].Amount = order.Amount
 			}
 
-			//if order.Amount.Cmp(big.NewInt(0)) == 0 {
 			if order.Amount.Cmp(ZeroNew) == 0 {
 				order.Status = COMPLETE
 				ob.buys[orderIndex].Status = COMPLETE
@@ -406,7 +397,7 @@ func (ob *OrderBook) execute(order Order) {
 
 	logic := map[string]map[string]func(){
 		MARKET: map[string]func(){
-			BUY:  func() { ob.executeMarketAsk(order, orderIndex) },
+			BUY:  func() { ob.executeMarketBuy(order, orderIndex) },
 			SELL: func() { ob.executeMarketBid(order, orderIndex) },
 		},
 		LIMIT: map[string]func(){
@@ -537,7 +528,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.buys); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.buys[i].ID, ob.buys[i].Amount.StringFixed(8), ob.buys[i].Price.StringFixed(8))
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.buys[i].ID, ob.buys[i].Amount.StringFixed(3), ob.buys[i].Price.StringFixed(3))
 	}
 
 	fmt.Println("SELLS:")
@@ -546,7 +537,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.sells); i++ {
-		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.sells[i].ID, ob.sells[i].Amount.StringFixed(8), ob.sells[i].Price.StringFixed(8))
+		fmt.Printf("ID: %d, Amonth: %s (%s)\r\n", ob.sells[i].ID, ob.sells[i].Amount.StringFixed(3), ob.sells[i].Price.StringFixed(3))
 	}
 
 	fmt.Println("STOPS:")
@@ -555,7 +546,7 @@ func (ob *OrderBook) Debug() {
 		fmt.Println("empty")
 	}
 	for i := 0; i < len(ob.stops); i++ {
-		fmt.Printf("ID: %d, Stop: %s, Amonth: %s (%s)\r\n", ob.stops[i].ID, ob.stops[i].Stop.StringFixed(8), ob.stops[i].Amount.StringFixed(8), ob.stops[i].Price.StringFixed(8))
+		fmt.Printf("ID: %d, Stop: %s, Amonth: %s (%s)\r\n", ob.stops[i].ID, ob.stops[i].Stop.StringFixed(3), ob.stops[i].Amount.StringFixed(3), ob.stops[i].Price.StringFixed(3))
 	}
 }
 
