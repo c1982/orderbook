@@ -68,6 +68,8 @@ func Test_Market_Buy_Easy(t *testing.T) {
 	ob.Debug()
 	ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
 	ob.Debug()
+
+	//Maker olduğu anda son yapılan işlem üzerindeki price kabul edilecek.
 }
 
 func Test_Market_Buy_Partial(t *testing.T) {
@@ -127,8 +129,8 @@ func Test_Stop_Sell_Market(t *testing.T) {
 	LoadTestData(ob)
 
 	//STOP: 30.400
-	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("1.01"), Price: A("0"), Time: time.Now()})
-	ob.AddStop(Order{ID: 8, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.5"), Price: A("0"), Time: time.Now()})
+	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.51"), Price: A("0"), Time: time.Now()})
+	ob.AddStop(Order{ID: 8, UserID: 105, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.4"), Price: A("0"), Time: time.Now()})
 
 	ob.AddOrder(Order{ID: 9, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Amount: A("1.1"), Price: A("0"), Time: time.Now()})
 

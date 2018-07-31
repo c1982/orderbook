@@ -133,6 +133,7 @@ func (ob *OrderBook) AddOrder(order Order) {
 	}
 
 	ob.fire()
+	ob.fireClen()
 }
 
 func (ob *OrderBook) buyAdd(order Order) {
@@ -257,7 +258,7 @@ func (ob *OrderBook) executeMarketBuy(order Order, orderIndex int) {
 
 }
 
-func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
+func (ob *OrderBook) executeMarketSell(order Order, orderIndex int) {
 
 	for i, iter := range ob.buys {
 
@@ -279,11 +280,7 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 			//} else if order.Amount < iter.Amount {
 		} else if order.Amount.Cmp(iter.Amount) == -1 {
 
-			//ob.buys[i].Amount -= order.Amount
-			//ob.buys[i].Amount = ob.buys[i].Amount.Sub(ob.buys[i].Amount, order.Amount)
 			ob.buys[i].Amount = ob.buys[i].Amount.Sub(order.Amount)
-
-			//taker := (order.Price <= iter.Price)
 			taker := (order.Price.Cmp(iter.Price) == -1) || (order.Price.Cmp(iter.Price) == 0)
 
 			ob.AddFill(order, iter, iter.Price, order.Amount, taker)
@@ -302,7 +299,7 @@ func (ob *OrderBook) executeMarketBid(order Order, orderIndex int) {
 
 }
 
-func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
+func (ob *OrderBook) executeLimitBuy(order Order, orderIndex int) {
 	for i, iter := range ob.sells {
 
 		//if iter.Price > order.Price {
@@ -350,7 +347,7 @@ func (ob *OrderBook) executeLimitAsk(order Order, orderIndex int) {
 	}
 }
 
-func (ob *OrderBook) executeLimitBid(order Order, orderIndex int) {
+func (ob *OrderBook) executeLimitSell(order Order, orderIndex int) {
 	for i, iter := range ob.buys {
 
 		//if iter.Price < order.Price {
@@ -398,11 +395,11 @@ func (ob *OrderBook) execute(order Order) {
 	logic := map[string]map[string]func(){
 		MARKET: map[string]func(){
 			BUY:  func() { ob.executeMarketBuy(order, orderIndex) },
-			SELL: func() { ob.executeMarketBid(order, orderIndex) },
+			SELL: func() { ob.executeMarketSell(order, orderIndex) },
 		},
 		LIMIT: map[string]func(){
-			BUY:  func() { ob.executeLimitAsk(order, orderIndex) },
-			SELL: func() { ob.executeLimitBid(order, orderIndex) },
+			BUY:  func() { ob.executeLimitBuy(order, orderIndex) },
+			SELL: func() { ob.executeLimitSell(order, orderIndex) },
 		},
 	}
 
@@ -416,18 +413,22 @@ func (ob *OrderBook) fire() {
 	var bestAsk decimal.Decimal
 	var bestBid decimal.Decimal
 
-	if len(ob.buys) > 0 {
-		bestAsk = ob.buys[0].Price
-	}
-
-	if len(ob.sells) > 0 {
-		bestBid = ob.sells[0].Price
-	}
-
 	for i := 0; i < len(ob.stops); i++ {
+
 		v := ob.stops[i]
 
-		//TODO: Eşitlik?
+		if v.Status == COMPLETE {
+			continue
+		}
+
+		if len(ob.buys) > 0 {
+			bestAsk = ob.buys[0].Price
+		}
+
+		if len(ob.sells) > 0 {
+			bestBid = ob.sells[0].Price
+		}
+
 		if v.Side == BUY {
 
 			//if v.Stop >= bestAsk {
@@ -454,6 +455,20 @@ func (ob *OrderBook) fire() {
 
 }
 
+func (ob *OrderBook) fireClen() {
+	//STOP
+	for i := 0; i < len(ob.stops); i++ {
+		v := ob.stops[i]
+
+		if v.Status != COMPLETE {
+			continue
+		}
+
+		ob.stops = append(ob.stops[:i], ob.stops[i+1:]...)
+		i--
+	}
+}
+
 func (ob *OrderBook) cleanComplete() {
 
 	//SELL
@@ -477,18 +492,6 @@ func (ob *OrderBook) cleanComplete() {
 		}
 
 		ob.buys = append(ob.buys[:i], ob.buys[i+1:]...)
-		i--
-	}
-
-	//STOP
-	for i := 0; i < len(ob.stops); i++ {
-		v := ob.stops[i]
-
-		if v.Status != COMPLETE {
-			continue
-		}
-
-		ob.stops = append(ob.stops[:i], ob.stops[i+1:]...)
 		i--
 	}
 }
