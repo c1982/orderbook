@@ -63,9 +63,7 @@ func Test_Market_Buy_Easy(t *testing.T) {
 	LoadTestData(ob)
 
 	ob.AddOrder(Order{ID: 9, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
-	ob.Debug()
 	ob.AddOrder(Order{ID: 10, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
-	ob.Debug()
 	ob.AddOrder(Order{ID: 11, UserID: 102, Base: "BTC", Second: "TRY", Type: "market", Side: BUY, Amount: A("10000"), Easy: true, Price: A("0"), Time: time.Now()})
 	ob.Debug()
 
@@ -129,20 +127,21 @@ func Test_Stop_Sell_Market(t *testing.T) {
 	LoadTestData(ob)
 
 	//STOP: 30.400
-	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.51"), Price: A("0"), Time: time.Now()})
-	ob.AddStop(Order{ID: 8, UserID: 105, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.4"), Price: A("0"), Time: time.Now()})
+	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.2"), Price: A("0"), Time: time.Now()})
+	ob.AddStop(Order{ID: 8, UserID: 105, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Stop: A("30400"), Amount: A("0.8"), Price: A("0"), Time: time.Now()})
 
 	ob.AddOrder(Order{ID: 9, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Amount: A("1.1"), Price: A("0"), Time: time.Now()})
 
 	ob.Debug()
 }
 
-func Test_Stop_Limit_Sell(t *testing.T) {
+func Test_Stop_Sell_Limit(t *testing.T) {
 
 	ob := NewOrderBook()
 	LoadTestData(ob)
 
-	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: SELL, Stop: A("30400"), Amount: A("1.0"), Price: A("30300"), Time: time.Now()})
+	ob.AddStop(Order{ID: 7, UserID: 104, Base: "BTC", Second: "TRY", Type: "limit", Side: SELL, Stop: A("30400"), Amount: A("1.0"), Price: A("30250"), Time: time.Now()})
+
 	ob.AddOrder(Order{ID: 8, UserID: 100, Base: "BTC", Second: "TRY", Type: "market", Side: SELL, Amount: A("1.1"), Price: A("0"), Time: time.Now()})
 
 	ob.Debug()

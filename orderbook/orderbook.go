@@ -11,6 +11,8 @@ import (
 )
 
 const (
+	PRESITION = 4
+
 	COMPLETE = iota + 1
 	FILLED
 	TRIGGIRED
@@ -78,8 +80,8 @@ func (f *Fill) String() {
 	}
 
 	fmt.Printf("Price: %s, Amount: %s (Satıcı: %d, Alıcı: %d), Fee: %s (%s), Side Fee: %s Bid: %d, Ask: %d Taker: %v\r\n",
-		f.Price.StringFixed(3),
-		f.Amount.StringFixed(3),
+		f.Price.StringFixed(PRESITION),
+		f.Amount.StringFixed(PRESITION),
 		f.BidOrder.UserID,
 		f.AskOrder.UserID,
 		f.Fee.StringFixed(4),
@@ -133,7 +135,7 @@ func (ob *OrderBook) AddOrder(order Order) {
 	}
 
 	ob.fire()
-	ob.fireClen()
+	ob.fireClean()
 }
 
 func (ob *OrderBook) buyAdd(order Order) {
@@ -455,7 +457,8 @@ func (ob *OrderBook) fire() {
 
 }
 
-func (ob *OrderBook) fireClen() {
+func (ob *OrderBook) fireClean() {
+
 	//STOP
 	for i := 0; i < len(ob.stops); i++ {
 		v := ob.stops[i]
@@ -518,6 +521,7 @@ func (ob *OrderBook) getIndex(o Order) int {
 }
 
 func (ob *OrderBook) Debug() {
+
 	fmt.Println("FILLED-BOOK")
 
 	for i := 0; i < len(ob.fills); i++ {
